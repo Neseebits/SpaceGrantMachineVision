@@ -21,6 +21,9 @@ def main():
             images = readAndShowCameras((leftCamera, rightCamera)) # Satifies that read images stage of control flow
             # Additional functions calls go here
 
+            # TODO
+            # Fill in remainder of functionality
+
 
             # Resets the consecutive error count if a full iteration is completed
             consecutiveErrors = 0
@@ -45,7 +48,7 @@ if __name__ == "__main__":
     # Define any global constants
     leftCamera = cv2.VideoCapture(0)
     rightCamera = cv2.VideoCapture(1)
-    errorTolerance = 2
+    errorTolerance = 1
 
     while True:
         main()
