@@ -30,7 +30,7 @@ if __name__ == "__main__":
     global rightCamera
 
     # Define any global constants
-    leftCamera = cv2.videoReader(0)
-    rightCamera = cv2.videoReader(1)
+    leftCamera = cv2.VideoCapture(0)
+    rightCamera = cv2.VideoCapture(1)
 
     main()
