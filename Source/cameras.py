@@ -41,7 +41,7 @@ def showCameras(images):
         cv2.imshow("Combined camera output", np.concatenate((images[0], images[1]), axis=1))
     # Implements a max 10ms wait until image is closed
     # This will allow some movement between input frames
-    key_pressed = cv2.waitKey(10) & 0xFF
+    key_pressed = cv2.waitKey(1) & 0xFF
     if key_pressed == 27:
         raise exceptions.KeyboardInterrupt("ESC")  # Quit on ESC
 

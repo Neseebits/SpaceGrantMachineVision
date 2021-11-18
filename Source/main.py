@@ -41,11 +41,11 @@ def main():
             if(consecutiveErrors > errorTolerance):
                 Logger.log("RESTARTING PRIMARY CONTROL LOOP")
                 break
-        if iterationCounter < 9:
+        if iterationCounter < iterationsToAverage:
             iterationTimes.append(time.time() - iterationStartTime)
             iterationCounter += 1
         else:
-            Logger.log("Average iteration time: {}".format(sum(iterationTimes)/iterationCounter))
+            Logger.log("Average iteration time: {} {}".format(round((sum(iterationTimes)/iterationCounter)*1000, 1), "ms"))
             iterationCounter = 0
             iterationTimes = []
             
@@ -56,12 +56,14 @@ if __name__ == "__main__":
     global leftCamera
     global rightCamera
     global errorTolerance # defines the amount of skipped/incomplete iterations before the loop is restarted
+    global iterationsToAverage
 
     # Define any global constants
-    leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
-    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)
+    leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0) #      cv2.CAP_DSHOW changes internal api stuff for opencv
+    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1) #   add/remove cv2.CAP_DSHOW as needed for your system
     rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
     errorTolerance = 2
+    iterationsToAverage = 9 # use n+1 to calculate true number averaged
 
     Logger.log("Program starting...")
     while True:
