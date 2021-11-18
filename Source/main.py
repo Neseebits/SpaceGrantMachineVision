@@ -28,7 +28,7 @@ def main():
             # Resets the consecutive error count if a full iteration is completed
             consecutiveErrors = 0
         except exceptions.KeyboardInterrupt as e: # Kills the loop if a keyboardInterrupt occurs
-            print("User killed loop with: " + e)
+            print("User killed loop with: " + e.getKey())
             break
         except Exception as e:
             # Possibly instead of restarting, we might want to look into 
@@ -47,14 +47,16 @@ if __name__ == "__main__":
 
     # Define any global constants
     leftCamera = cv2.VideoCapture(0)
-    rightCamera = cv2.VideoCapture(1)
+    rightCamera = cv2.VideoCapture(2)
     errorTolerance = 1
 
     while True:
+        print("Starting loop...")
         main()
         # sleep and then check for keyboardInterupt will fully kill program
         time.sleep(2)
         key_pressed = cv2.waitKey(10) & 0xFF
         if key_pressed == 27:
+            print("Program shutdown...")
             break
     sys.exit(0)
