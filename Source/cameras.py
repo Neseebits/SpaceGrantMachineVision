@@ -20,8 +20,10 @@ def readCameras(cameras):
     gotLeft, leftImage = cameras[0].read()
     gotRight, rightImage = cameras[1].read()
     # Ensure images were received
-    if(not gotLeft): raise exceptions.CameraReadError("Left")
-    if(not gotRight): raise exceptions.CameraReadError("Right")
+    if not gotLeft:
+        raise exceptions.CameraReadError("Left")
+    if not gotRight:
+        raise exceptions.CameraReadError("Right")
     # Return images in tuple format
     return (leftImage, rightImage)
 

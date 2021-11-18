@@ -4,7 +4,7 @@ import sys
 import time
 
 # Additional libs
-import numpy as np
+#import numpy as np
 import cv2
 
 # Custom imports
@@ -32,7 +32,7 @@ def main():
             break
         except Exception as e:
             # Possibly instead of restarting, we might want to look into 
-            print(e + " -> Occured in primary operation loop of program. Failed iterations in a row: {}").format(consecutiveErrors)
+            print(str(e) + " -> Occured in primary operation loop of program. Failed iterations in a row: {}".format(consecutiveErrors))
             consecutiveErrors += 1 
             if(consecutiveErrors > errorTolerance):
                 print("RESTARTING PRIMARY CONTROL LOOP")
@@ -46,8 +46,9 @@ if __name__ == "__main__":
     global errorTolerance # defines the amount of skipped/incomplete iterations before the loop is restarted
 
     # Define any global constants
-    leftCamera = cv2.VideoCapture(0)
-    rightCamera = cv2.VideoCapture(1)
+    leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
+    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)
+    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
     errorTolerance = 1
 
     print("Program starting...")
