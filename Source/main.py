@@ -50,9 +50,11 @@ if __name__ == "__main__":
     rightCamera = cv2.VideoCapture(1)
     errorTolerance = 1
 
+    print("Program starting...")
     while True:
         print("Starting loop...")
         main()
+        print("Shutdown loop...")
         # sleep and then check for keyboardInterupt will fully kill program
         time.sleep(2)
         key_pressed = cv2.waitKey(10) & 0xFF
