@@ -8,6 +8,7 @@ import time
 import cv2
 
 # Custom imports
+from logger import Logger
 import exceptions
 import cameras
 from cameras import readAndShowCameras
@@ -29,19 +30,20 @@ def main():
             # Resets the consecutive error count if a full iteration is completed
             consecutiveErrors = 0
         except exceptions.KeyboardInterrupt as e: # Kills the loop if a keyboardInterrupt occurs
-            print("User killed loop with: " + e.getKey())
+            Logger.log("User killed loop with: " + e.getKey())
             break
         except Exception as e:
-            # Possibly instead of restarting, we might want to look into 
-            print(str(e) + " -> Occured in primary operation loop of program. Failed iterations in a row: {}".format(consecutiveErrors))
+            # Possibly instead of restarting, we might want to look into
+            Logger.log(str(e) + " -> Occured in primary operation loop of program. Failed iterations in a row: {}".format(consecutiveErrors))
             consecutiveErrors += 1 
             if(consecutiveErrors > errorTolerance):
-                print("RESTARTING PRIMARY CONTROL LOOP")
+                Logger.log("RESTARTING PRIMARY CONTROL LOOP")
                 break
         print("Iteration time: {}".format(time.time() - iterationStartTime))
             
 
 if __name__ == "__main__":
+    Logger.open("log.txt")
     # Global constants for any hyperparameters for the code or physical constants
     global leftCamera
     global rightCamera
@@ -55,13 +57,15 @@ if __name__ == "__main__":
 
     print("Program starting...")
     while True:
-        print("Starting loop...")
+        Logger.log("Starting loop...")
         main()
         print("Shutdown loop...")
         # sleep and then check for keyboardInterupt will fully kill program
         time.sleep(2)
         key_pressed = cv2.waitKey(10) & 0xFF
         if key_pressed == 27:
-            print("Program shutdown...")
+            Logger.log("Program shutdown...")
             break
+        
+    Logger.close()
     sys.exit(0)
