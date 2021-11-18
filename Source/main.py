@@ -17,6 +17,7 @@ from cameras import readAndShowCameras
 def main():
     consecutiveErrors = 0
     while True:
+        iterationStartTime = time.time()
         try:
             images = readAndShowCameras((leftCamera, rightCamera)) # Satifies that read images stage of control flow
             # Additional functions calls go here
@@ -37,6 +38,7 @@ def main():
             if(consecutiveErrors > errorTolerance):
                 print("RESTARTING PRIMARY CONTROL LOOP")
                 break
+        print("Iteration time: {}".format(time.time() - iterationStartTime))
             
 
 if __name__ == "__main__":
@@ -47,9 +49,9 @@ if __name__ == "__main__":
 
     # Define any global constants
     leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
-    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)
-    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
-    errorTolerance = 1
+    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)
+    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
+    errorTolerance = 2
 
     print("Program starting...")
     while True:
