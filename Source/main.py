@@ -4,7 +4,7 @@ import sys
 import time
 
 # Additional libs
-#import numpy as np
+import numpy as np
 import cv2
 
 # Custom imports
@@ -17,7 +17,10 @@ from cameras import readAndShowCameras
 # Contains a while true loop for continous iteration
 def main():
     consecutiveErrors = 0
+    iterationCounter = 0
+    iterationTimes = []
     while True:
+        iterationStartTime = time.time()
         try:
             images = readAndShowCameras((leftCamera, rightCamera)) # Satifies that read images stage of control flow
             # Additional functions calls go here
@@ -38,6 +41,13 @@ def main():
             if(consecutiveErrors > errorTolerance):
                 Logger.log("RESTARTING PRIMARY CONTROL LOOP")
                 break
+        if iterationCounter < 9:
+            iterationTimes.append(time.time() - iterationStartTime)
+            iterationCounter += 1
+        else:
+            Logger.log("Average iteration time: {}".format(sum(iterationTimes)/iterationCounter))
+            iterationCounter = 0
+            iterationTimes = []
             
 
 if __name__ == "__main__":
@@ -49,11 +59,11 @@ if __name__ == "__main__":
 
     # Define any global constants
     leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
-    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)
-    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
-    errorTolerance = 1
+    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)
+    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
+    errorTolerance = 2
 
-    print("Program starting...")
+    Logger.log("Program starting...")
     while True:
         Logger.log("Starting loop...")
         main()
