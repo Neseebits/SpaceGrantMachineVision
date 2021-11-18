@@ -18,14 +18,9 @@ def main():
         try:
             images = readAndShowCameras((leftCamera, rightCamera))
 
-    
-            # Implements a 10ms wait at the end of every loop 
-            # This will allow some movement between input frames
-            key_pressed = cv2.waitKey(10) & 0xFF
-            if key_pressed == 27:
-                break  # Quit on ESC
-        except Exception:
-            print(Exception)
+        except Exception as e:
+            # Possibly instead of restarting, we might want to look into 
+            print(e + " -> Occured in primary operation loop of program. RESTARTING")
 
 if __name__ == "__main__":
     # Global constants for any hyperparameters for the code or physical constants

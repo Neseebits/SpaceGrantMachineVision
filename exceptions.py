@@ -14,3 +14,15 @@ class CameraReadError(Exception):
         self.camera = camera
         self.message = message
         super().__init__(self.message + str(camera))
+
+
+# GENERAL EXCEPTIONS
+
+# Raise/Raised when keyword interrupt occurs
+# Used to restart control flow loop of robot
+# Might be redunant?? OpenCV could have a matching interrupt we could have stolen, but this is made already
+class KeyboardInterrupt(Exception):
+    def __init__(self, key, message="Restarting control loop of program: "):
+        self.key = key
+        self.message = message
+        super().__init__(self.message + str(key))

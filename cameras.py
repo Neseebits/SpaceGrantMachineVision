@@ -37,10 +37,18 @@ def showCameras(images):
         cv2.imshow("Combined camera output", np.concatenate((resizedImages[0], resizedImages[1]), axis=1))
     else:
         cv2.imshow("Combined camera output", np.concatenate((images[0], images[1]), axis=1))
+    # Implements a 10ms wait
+    # This will allow some movement between input frames
+    key_pressed = cv2.waitKey(10) & 0xFF
+    if key_pressed == 27:
+        raise exceptions.KeyboardInterrupt("ESC")  # Quit on ESC
 
 # Convenience function which will read and show the images given by readCameras and showCameras
-# Will not pass the exception given by readCameras if a camera is not read
+# Will pass on exceptions
 def readAndShowCameras(cameras):
-    images = readCameras(cameras)
-    showCameras(images)
-    return images
+    try:
+        images = readCameras(cameras)
+        showCameras(images)
+        return images
+    except Exception as e:
+        raise e
