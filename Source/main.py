@@ -29,9 +29,10 @@ def main():
             break
         except Exception as e:
             # Possibly instead of restarting, we might want to look into 
-            print(e + " -> Occured in primary operation loop of program. RESTARTING")
+            print(e + " -> Occured in primary operation loop of program. Failed iterations in a row: {}").format(consecutiveErrors)
             consecutiveErrors += 1 
             if(consecutiveErrors > errorTolerance):
+                print("RESTARTING PRIMARY CONTROL LOOP")
                 break
             
 
