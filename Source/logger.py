@@ -7,10 +7,20 @@ class Logger:
     
     @classmethod
     def setLogToConsole(cls, enable):
+        """Tells the Logger whether to print to the console
+
+        Args:
+            enable (boolean): Whether to print to the console
+        """
         cls.logToConsole = enable
     
     @classmethod
     def open(cls, filepath):
+        """Confirms that the file can be opened and prints an opening message
+
+        Args:
+            filepath (str): The file that the log should be written to
+        """
         cls.logToFile = True
         if filepath == "":
             cls.logToFile = False
@@ -26,20 +36,27 @@ class Logger:
             cls.logToFile = False
     
     @classmethod
-    def log(cls, str):
-        message = "[" + datetime.now().strftime("%H:%M:%S") + "] " + str + "\n"
+    def log(cls, message, toFile=True):
+        """Logs the provided string to the console and file if it is configured to
+
+        Args:
+            message (str): The message to be output to the console and/or file
+        """
+        finalMessage = "[" + datetime.now().strftime("%H:%M:%S") + "] " + message + "\n"
         if cls.logToConsole:
-            print(message, end="")
-        if cls.logToFile:
+            print(finalMessage, end="")
+        if cls.logToFile and toFile:
             try:
                 file = open(cls.filepath, "a")
-                file.write(message)
+                file.write(finalMessage)
                 file.close()
             except IOError:
                 return
     
     @classmethod
     def close(cls):
+        """If logger is open, output a closing message to the file
+        """
         if cls.logToFile:
             try:
                 file = open(cls.filepath, "a")
