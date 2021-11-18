@@ -28,4 +28,4 @@ class KeyboardInterrupt(Exception):
         super().__init__(self.message + str(key))
         
     def getKey(self):
-        return self.key;
+        return self.key

@@ -4,7 +4,7 @@ import sys
 import time
 
 # Additional libs
-import numpy as np
+#import numpy as np
 import cv2
 
 # Custom imports
@@ -32,7 +32,7 @@ def main():
             Logger.log("User killed loop with: " + e.getKey())
             break
         except Exception as e:
-            # Possibly instead of restarting, we might want to look into 
+            # Possibly instead of restarting, we might want to look into
             Logger.log(str(e) + " -> Occured in primary operation loop of program. Failed iterations in a row: {}".format(consecutiveErrors))
             consecutiveErrors += 1 
             if(consecutiveErrors > errorTolerance):
@@ -48,13 +48,16 @@ if __name__ == "__main__":
     global errorTolerance # defines the amount of skipped/incomplete iterations before the loop is restarted
 
     # Define any global constants
-    leftCamera = cv2.VideoCapture(0)
-    rightCamera = cv2.VideoCapture(1)
+    leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
+    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)
+    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
     errorTolerance = 1
 
+    print("Program starting...")
     while True:
         Logger.log("Starting loop...")
         main()
+        print("Shutdown loop...")
         # sleep and then check for keyboardInterupt will fully kill program
         time.sleep(2)
         key_pressed = cv2.waitKey(10) & 0xFF
