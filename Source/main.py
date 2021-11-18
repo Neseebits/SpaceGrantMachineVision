@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     # Define any global constants
     leftCamera = cv2.VideoCapture(0)
-    rightCamera = cv2.VideoCapture(2)
+    rightCamera = cv2.VideoCapture(1)
     errorTolerance = 1
 
     while True:
