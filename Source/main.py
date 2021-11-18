@@ -51,7 +51,7 @@ def main():
             
 
 if __name__ == "__main__":
-    Logger.open("log.txt")
+    Logger.open("log.txt") # Sets the logger to log to the specified file.
     # Global constants for any hyperparameters for the code or physical constants
     global leftCamera
     global rightCamera
@@ -77,5 +77,5 @@ if __name__ == "__main__":
             Logger.log("Program shutdown...")
             break
         
-    Logger.close()
+    Logger.close() # Shuts down the logging system, aka prints a closing message to the file
     sys.exit(0)
