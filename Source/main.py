@@ -4,7 +4,7 @@ import sys
 import time
 
 # Additional libs
-#import numpy as np
+import numpy as np
 import cv2
 
 # Custom imports
@@ -17,6 +17,8 @@ from cameras import readAndShowCameras
 # Contains a while true loop for continous iteration
 def main():
     consecutiveErrors = 0
+    iterationCounter = 0
+    iterationTimes = []
     while True:
         iterationStartTime = time.time()
         try:
@@ -39,7 +41,13 @@ def main():
             if(consecutiveErrors > errorTolerance):
                 Logger.log("RESTARTING PRIMARY CONTROL LOOP")
                 break
-        print("Iteration time: {}".format(time.time() - iterationStartTime))
+        if iterationCounter < 9:
+            iterationTimes.append(time.time() - iterationStartTime)
+            iterationCounter += 1
+        else:
+            Logger.log("Average iteration time: {}".format(sum(iterationTimes)/iterationCounter))
+            iterationCounter = 0
+            iterationTimes = []
             
 
 if __name__ == "__main__":
@@ -55,11 +63,11 @@ if __name__ == "__main__":
     rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
     errorTolerance = 2
 
-    print("Program starting...")
+    Logger.log("Program starting...")
     while True:
         Logger.log("Starting loop...")
         main()
-        print("Shutdown loop...")
+        Logger.log("Shutdown loop...")
         # sleep and then check for keyboardInterupt will fully kill program
         time.sleep(2)
         key_pressed = cv2.waitKey(10) & 0xFF
