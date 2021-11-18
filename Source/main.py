@@ -45,7 +45,7 @@ def main():
             iterationTimes.append(time.time() - iterationStartTime)
             iterationCounter += 1
         else:
-            Logger.log("Average iteration time: {} {}".format(round((sum(iterationTimes)/iterationCounter)*1000, 1), "ms"))
+            Logger.log("Average iteration time: {} {}".format(round((sum(iterationTimes)/iterationCounter)*1000, 0), "ms"))
             iterationCounter = 0
             iterationTimes = []
             
