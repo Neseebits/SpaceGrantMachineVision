@@ -10,6 +10,10 @@ import cv2
 # Custom  imports
 import exceptions
 
+# TODO
+# Switch to using grab and decode in two lines, but grabbing both cameras at once and decoding both at once
+# Switch to using Numba for JIT compilation
+
 # Function to get the new frames from both cameras
 # "Safe" such that it will throw an exception if the cameras do not yield frames
 # Takes a tuple of camera numbers
@@ -27,6 +31,9 @@ def readCameras(cameras):
     # Return images in tuple format
     return (leftImage, rightImage)
 
+# TODO
+# Switch to using Numba for JIT compilation
+
 # Function makes a window which displays both camera feeds next to each other
 # Takes the images as a tuple where the first,second correspond to left,right
 # Has no return value, BUT requires a cv2.waitKey() at end of overall loop
@@ -39,6 +46,9 @@ def showCameras(images):
         cv2.imshow("Combined camera output", np.concatenate((resizedImages[0], resizedImages[1]), axis=1))
     else:
         cv2.imshow("Combined camera output", np.concatenate((images[0], images[1]), axis=1))
+
+# TODO
+# Switch to using Numba for JIT compilation
 
 # Convenience function which will read and show the images given by readCameras and showCameras
 # Will pass on exceptions

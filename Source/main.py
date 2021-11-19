@@ -23,7 +23,7 @@ def main():
         iterationStartTime = time.time()
         try:
             images = readAndShowCameras((leftCamera, rightCamera)) # Satifies that read images stage of control flow
-            # Additional functions calls go here
+            # ADDITIONAL FUNCTIONS BELOW
 
             # TODO
             # Fill in remainder of functionality
@@ -58,16 +58,11 @@ def main():
 if __name__ == "__main__":
     Logger.init("log.txt") # Starts the logger and sets the logger to log to the specified file.
     # Global constants for any hyperparameters for the code or physical constants
-    global leftCamera
-    global rightCamera
-    global errorTolerance # defines the amount of skipped/incomplete iterations before the loop is restarted
-    global iterationsToAverage
-
     # Define any global constants
     leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0) #      cv2.CAP_DSHOW changes internal api stuff for opencv
     # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1) #   add/remove cv2.CAP_DSHOW as needed for your system
     rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
-    errorTolerance = 2
+    errorTolerance = 2 # defines the amount of skipped/incomplete iterations before the loop is restarted
     iterationsToAverage = 9 # use n+1 to calculate true number averaged
 
     Logger.log("Program starting...")
