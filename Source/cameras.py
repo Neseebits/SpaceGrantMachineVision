@@ -6,7 +6,7 @@ import time
 # Additional libs
 import numpy as np
 import cv2
-from numba import jit, njit
+from numba import jit, cuda
 
 # Custom  imports
 import exceptions
@@ -29,6 +29,10 @@ def readCameras(left, right):
     # Return images in tuple format
     return left.retrieve()[1], right.retrieve()[1]
 
+# TODO
+# np.concatenate is a slow operation on the CPU
+# using numba it is possible to put on the GPU, @cuda.jit('void(int8[:,:,:], int8[:,:,:])')
+
 # Function makes a window which displays both camera feeds next to each other
 # Takes the images as two arguments: left, right images
 # Has no return value
@@ -46,7 +50,7 @@ def showCameras(left, right):
 
 # TODO
 # Figure out how to get numba to compile an except statement
-# numba can only do a basic except:, need to figure out how to pass on errors with numba compilation
+# numba can only do a basic try:, except:, need to figure out how to pass on errors with numba compilation
 
 # Convenience function which will read and show the images given by readCameras and showCameras
 # Will pass on exceptions

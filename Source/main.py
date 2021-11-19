@@ -2,10 +2,12 @@
 import os
 import sys
 import time
+import traceback
 
 # Additional libs
 import numpy as np
 import cv2
+from numba import cuda
 
 # Custom imports
 from logger import Logger
@@ -60,11 +62,14 @@ if __name__ == "__main__":
     # Global constants for any hyperparameters for the code or physical constants
     # Define any global constants
     leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0) #      cv2.CAP_DSHOW changes internal api stuff for opencv
-    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1) #   add/remove cv2.CAP_DSHOW as needed for your system
-    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
+    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1) #   add/remove cv2.CAP_DSHOW as needed for your system
+    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
     errorTolerance = 2 # defines the amount of skipped/incomplete iterations before the loop is restarted
     iterationsToAverage = 9 # use n+1 to calculate true number averaged
 
+    Logger.log("SYSTEM INFORMATION:")
+    # TODO
+    # print/log any nessecary information
     Logger.log("Program starting...")
     while True:
         Logger.log("Starting loop...")
