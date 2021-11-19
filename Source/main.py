@@ -22,7 +22,7 @@ def main():
     while True:
         iterationStartTime = time.time()
         try:
-            images = readAndShowCameras((leftCamera, rightCamera)) # Satifies that read images stage of control flow
+            images = readAndShowCameras(leftCamera, rightCamera) # Satifies that read images stage of control flow
             # ADDITIONAL FUNCTIONS BELOW
 
             # TODO
