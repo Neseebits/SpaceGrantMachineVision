@@ -16,7 +16,7 @@ import exceptions
 # Takes both cameras as left and right
 # Returns both image in leftImage, rightImage
 # Left image in return tuple corresponds to left camera number in return tuple
-@jit(forceobj=True)
+@jit(forceobj=True) # forceobj is used here since the opencv videoCaptures cannot be compiled
 def readCameras(left, right):
     # Got image boolean and retrieved image
     gotLeft = left.grab()
@@ -27,12 +27,12 @@ def readCameras(left, right):
     if not gotRight:
         raise exceptions.CameraReadError("Right")
     # Return images in tuple format
-    return left.retrieve(), right.retrieve()
+    return left.retrieve()[1], right.retrieve()[1]
 
 # Function makes a window which displays both camera feeds next to each other
 # Takes the images as two arguments: left, right images
 # Has no return value
-@jit(nopython=True)
+@jit(forceobj=True)
 def showCameras(left, right):
     if(left.shape != right.shape):
         minHeight = min(left.shape[0], right.shape[0])
