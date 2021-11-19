@@ -10,6 +10,7 @@ import cv2
 # Custom imports
 from logger import Logger
 import exceptions
+import cameras
 from cameras import readAndShowCameras
 
 # Primary function where our main control flow will happen
@@ -21,8 +22,8 @@ def main():
     while True:
         iterationStartTime = time.time()
         try:
-            images = readAndShowCameras((leftCamera, rightCamera)) # Satisfies that read images stage of control flow
-            # ADDITIONAL FUNCTIONS BELOW
+            images = readAndShowCameras((leftCamera, rightCamera)) # Satifies that read images stage of control flow
+            # Additional functions calls go here
 
             # TODO
             # Fill in remainder of functionality
@@ -41,7 +42,7 @@ def main():
         except Exception as e:
             # Possibly instead of restarting, we might want to look into
             Logger.log(str(e) + " -> Occured in primary operation loop of program. Failed iterations in a row: {}".format(consecutiveErrors))
-            consecutiveErrors += 1
+            consecutiveErrors += 1 
             if(consecutiveErrors > errorTolerance):
                 Logger.log("RESTARTING PRIMARY CONTROL LOOP")
                 break
@@ -55,7 +56,7 @@ def main():
             
 
 if __name__ == "__main__":
-    Logger.open("log.txt") # Sets the logger to log to the specified file.
+    Logger.init("log.txt") # Starts the logger and sets the logger to log to the specified file.
     # Global constants for any hyperparameters for the code or physical constants
     global leftCamera
     global rightCamera
@@ -84,5 +85,5 @@ if __name__ == "__main__":
     leftCamera.release()
     rightCamera.release()
     cv2.destroyAllWindows()
-    Logger.close() # Shuts down the logging system, aka prints a closing message to the file
+    Logger.shutdown()  # Shuts down the logging system and prints a closing message to the file
     sys.exit(0)

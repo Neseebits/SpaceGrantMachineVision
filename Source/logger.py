@@ -1,6 +1,12 @@
 from datetime import datetime
+from time import sleep
+import threading
 
 class Logger:
+    shouldThreadJoin = False
+    
+    buffer = []
+    
     logToConsole = True
     logToFile = False
     filepath = ""
@@ -15,17 +21,20 @@ class Logger:
         cls.logToConsole = enable
     
     @classmethod
-    def open(cls, filepath):
+    def openFile(cls, filepath):
         """Confirms that the file can be opened and prints an opening message
-
+        
         Args:
             filepath (str): The file that the log should be written to
         """
+        cls.settingsLock.acquire()
+        
         cls.logToFile = True
         if filepath == "":
             cls.logToFile = False
             return
         
+        cls.bufferLock.acquire()
         try:
             cls.filepath = filepath
             file = open(filepath, "a")
@@ -34,6 +43,9 @@ class Logger:
         except IOError:
             print("ERROR: unable to log to file at: " + filepath)
             cls.logToFile = False
+        cls.bufferLock.release()
+        
+        cls.settingsLock.release()
     
     @classmethod
     def log(cls, message, toFile=True):
@@ -42,16 +54,7 @@ class Logger:
         Args:
             message (str): The message to be output to the console and/or file
         """
-        finalMessage = "[" + datetime.now().strftime("%H:%M:%S") + "] " + message + "\n"
-        if cls.logToConsole:
-            print(finalMessage, end="")
-        if cls.logToFile and toFile:
-            try:
-                file = open(cls.filepath, "a")
-                file.write(finalMessage)
-                file.close()
-            except IOError:
-                return
+        cls.buffer.append(message)
     
     @classmethod
     def close(cls):
@@ -64,3 +67,50 @@ class Logger:
                 file.close()
             except IOError:
                 return
+    
+    @classmethod
+    def init(cls, filepath = ""):
+        cls.settingsLock = threading.Lock()
+        cls.bufferLock = threading.Lock()
+        cls.shouldThreadJoin = False
+        cls.logThread = threading.Thread(target=Logger.runLogThread, args=(filepath,))
+        cls.logThread.start()
+        return
+    
+    @classmethod
+    def shutdown(cls):
+        cls.settingsLock.acquire()
+        cls.shouldThreadJoin = True
+        cls.settingsLock.release()
+        cls.logThread.join()
+    
+    @classmethod
+    def runLogThread(cls, filepath = ""):
+        Logger.openFile(filepath)
+        while True:
+            cls.settingsLock.acquire()
+            cls.bufferLock.acquire()
+            if len(cls.buffer) != 0:
+                
+                for str in cls.buffer:
+                    finalMessage = "[" + datetime.now().strftime("%H:%M:%S") + "] " + str + "\n"
+                    if cls.logToConsole:
+                        print(finalMessage, end="")
+                    if cls.logToFile:# and toFile:
+                        try:
+                            file = open(cls.filepath, "a")
+                            file.write(finalMessage)
+                            file.close()
+                        except IOError:
+                            return
+                        
+                cls.buffer = []
+            cls.bufferLock.release()
+            
+            if cls.shouldThreadJoin:
+                break
+            cls.settingsLock.release()
+            
+            sleep(0.1)
+        
+        Logger.close()
