@@ -10,7 +10,6 @@ import cv2
 # Custom imports
 from logger import Logger
 import exceptions
-import cameras
 from cameras import readAndShowCameras
 
 # Primary function where our main control flow will happen
@@ -22,22 +21,27 @@ def main():
     while True:
         iterationStartTime = time.time()
         try:
-            images = readAndShowCameras((leftCamera, rightCamera)) # Satifies that read images stage of control flow
-            # Additional functions calls go here
+            images = readAndShowCameras((leftCamera, rightCamera)) # Satisfies that read images stage of control flow
+            # ADDITIONAL FUNCTIONS BELOW
 
             # TODO
             # Fill in remainder of functionality
 
 
+            # ADDITIONAL FUNCTIONS ABOVE
             # Resets the consecutive error count if a full iteration is completed
             consecutiveErrors = 0
+            # cv2.waitKey is needed for opencv to properly display images (think of it like a timer or interrupt)
+            keyPressed = cv2.waitKey(10) & 0xFF
+            if keyPressed == 27:
+                raise exceptions.KeyboardInterrupt("ESC")  # Quit on ESC
         except exceptions.KeyboardInterrupt as e: # Kills the loop if a keyboardInterrupt occurs
             Logger.log("User killed loop with: " + e.getKey())
             break
         except Exception as e:
             # Possibly instead of restarting, we might want to look into
             Logger.log(str(e) + " -> Occured in primary operation loop of program. Failed iterations in a row: {}".format(consecutiveErrors))
-            consecutiveErrors += 1 
+            consecutiveErrors += 1
             if(consecutiveErrors > errorTolerance):
                 Logger.log("RESTARTING PRIMARY CONTROL LOOP")
                 break
@@ -45,7 +49,7 @@ def main():
             iterationTimes.append(time.time() - iterationStartTime)
             iterationCounter += 1
         else:
-            Logger.log("Average iteration time: {} {}".format(round((sum(iterationTimes)/iterationCounter)*1000, 0), "ms"))
+            Logger.log("Average iteration time: {} {}".format(round((sum(iterationTimes)/iterationCounter)*1000, 1), "ms"))
             iterationCounter = 0
             iterationTimes = []
             
@@ -72,10 +76,13 @@ if __name__ == "__main__":
         Logger.log("Shutdown loop...")
         # sleep and then check for keyboardInterupt will fully kill program
         time.sleep(2)
-        key_pressed = cv2.waitKey(10) & 0xFF
-        if key_pressed == 27:
+        keyPressed = cv2.waitKey(10) & 0xFF
+        if keyPressed == 27:
             Logger.log("Program shutdown...")
             break
-        
+
+    leftCamera.release()
+    rightCamera.release()
+    cv2.destroyAllWindows()
     Logger.close() # Shuts down the logging system, aka prints a closing message to the file
     sys.exit(0)

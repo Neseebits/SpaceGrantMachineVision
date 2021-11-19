@@ -29,7 +29,7 @@ def readCameras(cameras):
 
 # Function makes a window which displays both camera feeds next to each other
 # Takes the images as a tuple where the first,second correspond to left,right
-# Has no return value, BUT requires a cv2.waitKey() at end of its call
+# Has no return value, BUT requires a cv2.waitKey() at end of overall loop
 def showCameras(images):
     if(images[0].shape != images[1].shape):
         minHeight = min(images[0].shape[0], images[1].shape[0])
@@ -39,10 +39,6 @@ def showCameras(images):
         cv2.imshow("Combined camera output", np.concatenate((resizedImages[0], resizedImages[1]), axis=1))
     else:
         cv2.imshow("Combined camera output", np.concatenate((images[0], images[1]), axis=1))
-    # cv2.waitKey is needed for opencv to properly display images (think of it like a timer or interrupt)
-    key_pressed = cv2.waitKey(10) & 0xFF
-    if key_pressed == 27:
-        raise exceptions.KeyboardInterrupt("ESC")  # Quit on ESC
 
 # Convenience function which will read and show the images given by readCameras and showCameras
 # Will pass on exceptions

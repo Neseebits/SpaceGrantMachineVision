@@ -26,6 +26,5 @@ class KeyboardInterrupt(Exception):
         self.key = key
         self.message = message
         super().__init__(self.message + str(key))
-        
     def getKey(self):
         return self.key
