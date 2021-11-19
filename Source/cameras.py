@@ -17,15 +17,15 @@ import exceptions
 # Left image in return tuple corresponds to left camera number in return tuple
 def readCameras(cameras):
     # Got image boolean and retrieved image
-    gotLeft, leftImage = cameras[0].read()
-    gotRight, rightImage = cameras[1].read()
+    gotLeft = cameras[0].grab()
+    gotRight = cameras[1].grab()
     # Ensure images were received
     if not gotLeft:
         raise exceptions.CameraReadError("Left")
     if not gotRight:
         raise exceptions.CameraReadError("Right")
     # Return images in tuple format
-    return (leftImage, rightImage)
+    return (cameras[0].retrieve(), cameras[1].retrieve())
 
 # Function makes a window which displays both camera feeds next to each other
 # Takes the images as a tuple where the first,second correspond to left,right
