@@ -15,6 +15,10 @@ class CameraReadError(Exception):
         self.message = message
         super().__init__(self.message + str(camera))
 
+class UndistortImageError(Exception):
+    def __init__(self, message="Error in undistortImages in cameras.py"):
+        self.message = message
+        super().__init__(self.message)
 
 # GENERAL EXCEPTIONS
 

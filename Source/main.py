@@ -2,7 +2,7 @@
 import os
 import sys
 import time
-import traceback
+import pathlib
 
 # Additional libs
 import numpy as np
@@ -55,9 +55,21 @@ def main():
             Logger.log("Average iteration time: {} {}".format(round((sum(iterationTimes)/iterationCounter)*1000, 1), "ms"))
             iterationCounter = 0
             iterationTimes = []
-            
+
+# Function that will run some code one time before anything else
+# Primarily used for creating some files and/or testing some code
+def optional():
+    print("Running any optional code")
+    # lk = np.asarray([[10,0,320],[0,10,240],[0,0,1]])
+    # ld = np.asarray([[0],[0],[0],[0]])
+    # rk = lk
+    # rd = ld
+    # cameras.writeKandDistNPZ(lk, rk, ld, rd)
+
+    print("Finished running any optional code")
 
 if __name__ == "__main__":
+    optional()
     Logger.init("log.txt") # Starts the logger and sets the logger to log to the specified file.
     # Global constants for any hyperparameters for the code or physical constants
     # Define any global constants
@@ -69,7 +81,7 @@ if __name__ == "__main__":
 
     Logger.log("SYSTEM INFORMATION:")
     # TODO
-    # print/log any nessecary information
+    # print/log any nessecary system information
     Logger.log("Program starting...")
     while True:
         Logger.log("Starting loop...")
