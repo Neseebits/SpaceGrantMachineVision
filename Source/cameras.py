@@ -75,7 +75,7 @@ def readAndShowCameras(leftCam, rightCam):
 # returns the undistorted images or raises an exception
 def undistortImages(left, right):
     try:
-        calibrationPath = os.path.abspath(os.path.join(os.pardir)) + "\Data\Calibration\\"
+        calibrationPath = "Data/Calibration/"
         leftK = np.load(calibrationPath + "leftK.npy")
         rightK = np.load(calibrationPath + "rightK.npy")
         leftDistC = np.load(calibrationPath + "leftDistC.npy")
