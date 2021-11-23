@@ -73,20 +73,23 @@ def readAndShowCameras(leftCam, rightCam):
 # Utilizes pre-saved camera coefficient matrices and dist coeff arrays
 # Takes two images(np arrays of shape (w,h,c)) as parameters
 # returns the undistorted images or raises an exception
+@jit(forceobj=True)
 def undistortImages(left, right):
+    foundFiles = False
     try:
-        calibrationPath = "Data/Calibration/"
+        calibrationPath = "Data\\Calibration\\"
         leftK = np.load(calibrationPath + "leftK.npy")
         rightK = np.load(calibrationPath + "rightK.npy")
         leftDistC = np.load(calibrationPath + "leftDistC.npy")
         rightDistC = np.load(calibrationPath + "rightDistC.npy")
+        foundFiles = True
         leftNewK, _ = cv2.getOptimalNewCameraMatrix(leftK, leftDistC, (left.shape[1], left.shape[0]), 1, (left.shape[1], left.shape[0]))
         rightNewK, _ = cv2.getOptimalNewCameraMatrix(rightK, rightDistC, (right.shape[1], right.shape[0]), 1, (right.shape[1], right.shape[0]))
         return cv2.undistort(left, leftK, leftDistC, None, leftNewK), cv2.undistort(right, rightK, rightDistC, None, rightNewK)
-    except FileNotFoundError:
-       raise FileNotFoundError("File missing in undistortImages")
     except:
-        raise exceptions.UndistortImageError()
+        if foundFiles:
+            raise exceptions.UndistortImageError("undistortImages function error")
+        raise FileNotFoundError("Cannot load calibration data in undistortImages -> cameras.py")
 
 # Function to write K matrix and dist coeffs to npz files
 # K matrix is a 3x3 and dist coeffs is of length 4
