@@ -17,7 +17,7 @@ import exceptions
 # Takes both cameras as left and right
 # Returns both image in leftImage, rightImage
 # Left image in return tuple corresponds to left camera number in return tuple
-@jit(forceobj=True)  # forceobj is used here since the opencv videoCaptures cannot be compiled
+# @jit(forceobj=True)  # forceobj is used here since the opencv videoCaptures cannot be compiled
 def readCameras(left, right):
     # Got image boolean and retrieved image
     gotLeft = left.grab()
@@ -38,7 +38,7 @@ def readCameras(left, right):
 # Function makes a window which displays both camera feeds next to each other
 # Takes the images as two arguments: left, right images
 # Has no return value
-@jit(forceobj=True)
+# @jit(forceobj=True)
 def showCameras(left, right):
     if (left.shape != right.shape):
         minHeight = min(left.shape[0], right.shape[0])
@@ -86,9 +86,9 @@ def undistortImages(left, right):
         rightNewK, _ = cv2.getOptimalNewCameraMatrix(rightK, rightDistC, (right.shape[1], right.shape[0]), 1, (right.shape[1], right.shape[0]))
         return cv2.undistort(left, leftK, leftDistC, None, leftNewK), cv2.undistort(right, rightK, rightDistC, None, rightNewK)
     except FileNotFoundError:
-       raise FileNotFoundError("File missing in undistortImages")
+        raise FileNotFoundError("Cannot load calibration data in undistortImages -> cameras.py")
     except:
-        raise exceptions.UndistortImageError()
+        raise exceptions.UndistortImageError("undistortImages function error")
 
 # Function to write K matrix and dist coeffs to npz files
 # K matrix is a 3x3 and dist coeffs is of length 4
