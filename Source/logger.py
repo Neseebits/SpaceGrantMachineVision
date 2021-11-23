@@ -13,7 +13,7 @@ class Logger:
     
     @classmethod
     def setLogToConsole(cls, enable):
-        """Tells the Logger whether to print to the console
+        """DO NOT DIRECTLY CALL - Tells the Logger whether to print to the console
 
         Args:
             enable (boolean): Whether to print to the console
@@ -22,7 +22,7 @@ class Logger:
     
     @classmethod
     def openFile(cls, filepath):
-        """Confirms that the file can be opened and prints an opening message
+        """DO NOT DIRECTLY CALL - Confirms that the file can be opened and prints an opening message
         
         Args:
             filepath (str): The file that the log should be written to
@@ -48,17 +48,8 @@ class Logger:
         cls.settingsLock.release()
     
     @classmethod
-    def log(cls, message, toFile=True):
-        """Logs the provided string to the console and file if it is configured to
-
-        Args:
-            message (str): The message to be output to the console and/or file
-        """
-        cls.buffer.append(message)
-    
-    @classmethod
     def close(cls):
-        """If logger is open, output a closing message to the file
+        """DO NOT DIRECTLY CALL - If logger is open, output a closing message to the file
         """
         if cls.logToFile:
             try:
@@ -69,7 +60,18 @@ class Logger:
                 return
     
     @classmethod
+    def log(cls, message, toFile=True):
+        """Adds the message to the buffer, then the logger thread logs the provided string to the console and file if it is configured to
+
+        Args:
+            message (str): The message to be output to the console and/or file
+        """
+        cls.buffer.append(message)
+    
+    @classmethod
     def init(cls, filepath = ""):
+        """Start the logger thread, will log to file if specified
+        """
         cls.settingsLock = threading.Lock()
         cls.bufferLock = threading.Lock()
         cls.shouldThreadJoin = False
@@ -79,6 +81,8 @@ class Logger:
     
     @classmethod
     def shutdown(cls):
+        """Stops the logger thread
+        """
         cls.settingsLock.acquire()
         cls.shouldThreadJoin = True
         cls.settingsLock.release()
@@ -86,6 +90,8 @@ class Logger:
     
     @classmethod
     def runLogThread(cls, filepath = ""):
+        """Function used by the logger thread
+        """
         Logger.openFile(filepath)
         while True:
             cls.settingsLock.acquire()
