@@ -27,9 +27,12 @@ def readCameras(left, right):
         raise exceptions.CameraReadError("Left")
     if not gotRight:
         raise exceptions.CameraReadError("Right")
-    # Return images in tuple format
+    # Return images
     return left.retrieve()[1], right.retrieve()[1]
 
+# makes grayscale images of the bgr_images returned by readCameras
+def getGrayscaleImages(left, right):
+    return cv2.cvtColor(left, cv2.COLOR_BGR2GRAY), cv2.cvtColor(right, cv2.COLOR_BGR2GRAY)
 
 # TODO
 # np.concatenate is a slow operation on the CPU
@@ -89,6 +92,17 @@ def undistortImages(left, right):
         raise FileNotFoundError("Cannot load calibration data in undistortImages -> cameras.py")
     except:
         raise exceptions.UndistortImageError("undistortImages function error")
+
+# compute the disparity map of the two grayscale images given
+# this uses the cv2.StereoBM object
+def computeDisparity(stereo, left, right, show=False):
+    # TODO
+    # implement kevin's visual odometry disparity map stuff here, although I think this is pretty close?????
+    disparity = stereo.compute(left, right).astype(np.float32)
+    disparity = cv2.normalize(disparity, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    if show:
+        cv2.imshow("Disparity map", disparity)
+    return disparity
 
 # Function to write K matrix and dist coeffs to npz files
 # K matrix is a 3x3 and dist coeffs is of length 4
