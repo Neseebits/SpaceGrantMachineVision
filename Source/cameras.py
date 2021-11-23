@@ -76,6 +76,8 @@ def readAndShowCameras(leftCam, rightCam):
 def undistortImages(left, right):
     try:
         calibrationPath = "Data/Calibration/"
+        if not os.path.isdir(calibrationPath):
+            calibrationPath = "../" + calibrationPath
         leftK = np.load(calibrationPath + "leftK.npy")
         rightK = np.load(calibrationPath + "rightK.npy")
         leftDistC = np.load(calibrationPath + "leftDistC.npy")
