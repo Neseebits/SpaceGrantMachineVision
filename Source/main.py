@@ -73,7 +73,7 @@ def optional():
 
 if __name__ == "__main__":
     optional()
-    Logger.init("log.txt") # Starts the logger and sets the logger to log to the specified file.
+    Logger.init("log.log") # Starts the logger and sets the logger to log to the specified file.
     # Global constants for any hyperparameters for the code or physical constants
     # Define any global constants
     leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0) #      cv2.CAP_DSHOW changes internal api stuff for opencv

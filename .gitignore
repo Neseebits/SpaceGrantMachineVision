@@ -1,3 +1,6 @@
+# ignore log file
+.log
+
 # PyCharm IDE
 .idea
 
