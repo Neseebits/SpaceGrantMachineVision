@@ -23,7 +23,9 @@ def main():
     while True:
         iterationStartTime = time.time()
         try:
-            leftImage, rightImage = cameras.readAndShowCameras(leftCamera, rightCamera) # Satifies that read images stage of control flow
+            # Satifies that read images stage of control flow
+            leftImage, rightImage = cameras.readAndShowCameras(leftCamera, rightCamera,
+                                                               leftK, rightK, leftDistC, rightDistC)
             grayLeftImage, grayRightImage = cameras.getGrayscaleImages(leftImage, rightImage)
             # ADDITIONAL FUNCTIONS BELOW
 
@@ -71,6 +73,18 @@ def optional():
 
     print("Finished running any optional code")
 
+def loadFiles():
+    # one time file loading for the camera intrinsic matrices and undistortion coeff
+    calibrationPath = "Data/Calibration/"
+    if not os.path.isdir(calibrationPath):
+        calibrationPath = "../" + calibrationPath
+    leftK = np.load(calibrationPath + "leftK.npy")
+    rightK = np.load(calibrationPath + "rightK.npy")
+    leftDistC = np.load(calibrationPath + "leftDistC.npy")
+    rightDistC = np.load(calibrationPath + "rightDistC.npy")
+
+    return leftK, rightK, leftDistC, rightDistC
+
 if __name__ == "__main__":
     optional()
     Logger.init("log.log") # Starts the logger and sets the logger to log to the specified file.
@@ -86,6 +100,8 @@ if __name__ == "__main__":
     orb = cv2.ORB_create(nfeatures = 1000) # orb feature detector object
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True) # matcher object
     stereo = cv2.StereoBM_create(numDisparities=16, blockSize=15) # stereo object
+
+    leftK, rightK, leftDistC, rightDistC = loadFiles()
 
     Logger.log("SYSTEM INFORMATION:")
     # TODO

@@ -60,10 +60,10 @@ def showCameras(left, right):
 
 # Convenience function which will read and show the images given by readCameras and showCameras
 # Will pass on exceptions
-def readAndShowCameras(leftCam, rightCam):
+def readAndShowCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC):
     try:
         leftImage, rightImage = readCameras(leftCam, rightCam)
-        undistLeft, undistRight = undistortImages(leftImage, rightImage)
+        undistLeft, undistRight = undistortImages(leftImage, rightImage, leftK, rightK, leftDistC, rightDistC)
         showCameras(undistLeft, undistRight)
         return undistLeft, undistRight
     except Exception as e:
@@ -76,15 +76,8 @@ def readAndShowCameras(leftCam, rightCam):
 # Utilizes pre-saved camera coefficient matrices and dist coeff arrays
 # Takes two images(np arrays of shape (w,h,c)) as parameters
 # returns the undistorted images or raises an exception
-def undistortImages(left, right):
+def undistortImages(left, right, leftK, rightK, leftDistC, rightDistC):
     try:
-        calibrationPath = "Data/Calibration/"
-        if not os.path.isdir(calibrationPath):
-            calibrationPath = "../" + calibrationPath
-        leftK = np.load(calibrationPath + "leftK.npy")
-        rightK = np.load(calibrationPath + "rightK.npy")
-        leftDistC = np.load(calibrationPath + "leftDistC.npy")
-        rightDistC = np.load(calibrationPath + "rightDistC.npy")
         leftNewK, _ = cv2.getOptimalNewCameraMatrix(leftK, leftDistC, (left.shape[1], left.shape[0]), 1, (left.shape[1], left.shape[0]))
         rightNewK, _ = cv2.getOptimalNewCameraMatrix(rightK, rightDistC, (right.shape[1], right.shape[0]), 1, (right.shape[1], right.shape[0]))
         return cv2.undistort(left, leftK, leftDistC, None, leftNewK), cv2.undistort(right, rightK, rightDistC, None, rightNewK)
