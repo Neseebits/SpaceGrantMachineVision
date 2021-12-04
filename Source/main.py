@@ -6,6 +6,7 @@ import time
 # Additional libs
 import numpy as np
 import cv2
+from numba import njit, jit
 
 # Custom imports
 from logger import Logger
@@ -15,6 +16,7 @@ from cameras import readAndShowCameras
 
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration
+# @njit
 def main():
     consecutiveErrors = 0
     iterationCounter = 0
