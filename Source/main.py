@@ -2,21 +2,20 @@
 import os
 import sys
 import time
+import pathlib
 
 # Additional libs
 import numpy as np
 import cv2
-from numba import njit, jit
+from numba import cuda
 
 # Custom imports
 from logger import Logger
 import exceptions
 import cameras
-from cameras import readAndShowCameras
 
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration
-# @njit
 def main():
     consecutiveErrors = 0
     iterationCounter = 0
@@ -24,11 +23,15 @@ def main():
     while True:
         iterationStartTime = time.time()
         try:
-            images = readAndShowCameras((leftCamera, rightCamera)) # Satifies that read images stage of control flow
+            leftImage, rightImage = cameras.readAndShowCameras(leftCamera, rightCamera) # Satifies that read images stage of control flow
+            grayLeftImage, grayRightImage = cameras.getGrayscaleImages(leftImage, rightImage)
             # ADDITIONAL FUNCTIONS BELOW
 
             # TODO
             # Fill in remainder of functionality
+
+            # this disparity map calculation wouldn't normally be here since we only really care about the depth values
+            disparityMap = cameras.computeDisparity(stereo, grayLeftImage, grayRightImage, show=True)
 
 
             # ADDITIONAL FUNCTIONS ABOVE
@@ -55,18 +58,38 @@ def main():
             Logger.log("Average iteration time: {} {}".format(round((sum(iterationTimes)/iterationCounter)*1000, 1), "ms"))
             iterationCounter = 0
             iterationTimes = []
-            
+
+# Function that will run some code one time before anything else
+# Primarily used for creating some files and/or testing some code
+def optional():
+    print("Running any optional code")
+    # lk = np.asarray([[10,0,320],[0,10,240],[0,0,1]])
+    # ld = np.asarray([[0],[0],[0],[0]])
+    # rk = lk
+    # rd = ld
+    # cameras.writeKandDistNPZ(lk, rk, ld, rd)
+
+    print("Finished running any optional code")
 
 if __name__ == "__main__":
-    Logger.init("log.txt") # Starts the logger and sets the logger to log to the specified file.
+    optional()
+    Logger.init("log.log") # Starts the logger and sets the logger to log to the specified file.
     # Global constants for any hyperparameters for the code or physical constants
     # Define any global constants
     leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0) #      cv2.CAP_DSHOW changes internal api stuff for opencv
-    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1) #   add/remove cv2.CAP_DSHOW as needed for your system
-    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
+    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1) #   add/remove cv2.CAP_DSHOW as needed for your system
+    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
     errorTolerance = 2 # defines the amount of skipped/incomplete iterations before the loop is restarted
     iterationsToAverage = 9 # use n+1 to calculate true number averaged
 
+    # defining opencv objects
+    orb = cv2.ORB_create(nfeatures = 1000) # orb feature detector object
+    matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True) # matcher object
+    stereo = cv2.StereoBM_create(numDisparities=16, blockSize=15) # stereo object
+
+    Logger.log("SYSTEM INFORMATION:")
+    # TODO
+    # print/log any nessecary system information
     Logger.log("Program starting...")
     while True:
         Logger.log("Starting loop...")
