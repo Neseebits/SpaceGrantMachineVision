@@ -7,7 +7,7 @@ import pathlib
 # Additional libs
 import numpy as np
 import cv2
-from numba import cuda
+import numba
 
 # Custom imports
 from logger import Logger
