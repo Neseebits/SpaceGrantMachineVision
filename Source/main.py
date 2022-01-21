@@ -13,6 +13,7 @@ import numba
 from logger import Logger
 import exceptions
 import cameras
+import features
 
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration
@@ -24,16 +25,19 @@ def main():
         iterationStartTime = time.time()
         try:
             # Satifies that read images stage of control flow
-            leftImage, rightImage = cameras.readAndShowCameras(leftCamera, rightCamera,
-                                                               leftK, rightK, leftDistC, rightDistC)
+            leftImage, rightImage = cameras.readAndShowCameras(leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC, show=False)
+            # grayscale images for feature detection
             grayLeftImage, grayRightImage = cameras.getGrayscaleImages(leftImage, rightImage)
-            # ADDITIONAL FUNCTIONS BELOW
+            # feature points for left and right images
+            # the point at index [0] in both is the same real life feature
+            leftFeaturePoints, rightFeaturePoints = features.computeMatchingPoints(grayLeftImage, grayRightImage, orb, matcher, showMatches=True)
 
             # TODO
             # Fill in remainder of functionality
 
+
             # this disparity map calculation wouldn't normally be here since we only really care about the depth values
-            disparityMap = cameras.computeDisparity(stereo, grayLeftImage, grayRightImage, show=True)
+            disparityMap = cameras.computeDisparity(stereo, grayLeftImage, grayRightImage, show=False)
 
 
             # ADDITIONAL FUNCTIONS ABOVE
@@ -99,7 +103,7 @@ if __name__ == "__main__":
     # defining opencv objects
     orb = cv2.ORB_create(nfeatures = 1000) # orb feature detector object
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True) # matcher object
-    stereo = cv2.StereoBM_create(numDisparities=16, blockSize=15) # stereo object
+    stereo = cv2.StereoSGBM_create() # stereo object
 
     leftK, rightK, leftDistC, rightDistC = loadFiles()
 

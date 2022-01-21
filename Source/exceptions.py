@@ -20,6 +20,12 @@ class UndistortImageError(Exception):
         self.message = message
         super().__init__(self.message)
 
+# FEATURE EXCEPTIONS
+class FeatureMatchingError(Exception):
+    def __init__(self, message="Error in features.py"):
+        self.message = message
+        super().__init__(self.message)
+
 # GENERAL EXCEPTIONS
 
 # Raise/Raised when keyword interrupt occurs

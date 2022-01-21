@@ -60,11 +60,12 @@ def showCameras(left, right):
 
 # Convenience function which will read and show the images given by readCameras and showCameras
 # Will pass on exceptions
-def readAndShowCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC):
+def readAndShowCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, show=True):
     try:
         leftImage, rightImage = readCameras(leftCam, rightCam)
         undistLeft, undistRight = undistortImages(leftImage, rightImage, leftK, rightK, leftDistC, rightDistC)
-        showCameras(undistLeft, undistRight)
+        if show:
+            showCameras(undistLeft, undistRight)
         return undistLeft, undistRight
     except Exception as e:
         raise e
