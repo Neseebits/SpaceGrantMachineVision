@@ -30,7 +30,7 @@ def main():
             grayLeftImage, grayRightImage = cameras.getGrayscaleImages(leftImage, rightImage)
             # feature points for left and right images
             # the point at index [0] in both is the same real life feature
-            leftFeaturePoints, rightFeaturePoints = features.computeMatchingPoints(grayLeftImage, grayRightImage, orb, matcher, showMatches=True)
+            # leftFeaturePoints, rightFeaturePoints = features.computeMatchingPoints(grayLeftImage, grayRightImage, orb, matcher, showMatches=True)
 
             # TODO
             # Fill in remainder of functionality

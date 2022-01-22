@@ -10,6 +10,10 @@ import cv2
 # Custom imports
 import exceptions
 
+# get the height and width dimensions from an image
+def getHeightWidth(img):
+    return img.shape[0], img.shape[1]
+
 # UNTESTED
 # read all images in given folder, if recurse is true will also get all images in sub_folders of the given folder
 # prints an error if cv2.imread() throws an exception
