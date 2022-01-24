@@ -5,6 +5,17 @@ import cv2
 import os
 from pathlib import Path
 
+# compute the disparity map of the two grayscale images given
+# this uses the cv2.StereoBM object
+def computeDisparity(stereo, left, right, show=False):
+    # TODO
+    # implement kevin's visual odometry disparity map stuff here, although I think this is pretty close?????
+    disparity = stereo.compute(left, right).astype(np.float32)
+    disparity = cv2.normalize(disparity, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    if show:
+        cv2.imshow("Disparity map", disparity)
+    return disparity
+
 #Returns the list of file names from the left folder.
 def return_left_samples():
     listOfFilesLeft = os.listdir(os.path.join(os.path.dirname(__file__) + "./images/left"))

@@ -12,7 +12,8 @@ import numba
 # Custom imports
 from logger import Logger
 import exceptions
-from cameras import readAndShowCameras, getGrayscaleImages, computeDisparity
+from cameras import readAndShowCameras, getGrayscaleImages
+from visualOdometry import computeDisparity
 import features
 
 

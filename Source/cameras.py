@@ -87,17 +87,6 @@ def undistortImages(left, right, leftK, rightK, leftDistC, rightDistC):
     except:
         raise exceptions.UndistortImageError("undistortImages function error")
 
-# compute the disparity map of the two grayscale images given
-# this uses the cv2.StereoBM object
-def computeDisparity(stereo, left, right, show=False):
-    # TODO
-    # implement kevin's visual odometry disparity map stuff here, although I think this is pretty close?????
-    disparity = stereo.compute(left, right).astype(np.float32)
-    disparity = cv2.normalize(disparity, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-    if show:
-        cv2.imshow("Disparity map", disparity)
-    return disparity
-
 # Function to write K matrix and dist coeffs to npz files
 # K matrix is a 3x3 and dist coeffs is of length 4
 def writeKandDistNPZ(lk, rk, ld, rd):
