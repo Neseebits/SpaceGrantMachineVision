@@ -1,1 +1,0 @@
-from visualodometry import computeDisparity

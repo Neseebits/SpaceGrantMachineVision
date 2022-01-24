@@ -17,11 +17,10 @@ import exceptions
 # Takes both cameras as left and right
 # Returns both image in leftImage, rightImage
 # Left image in return tuple corresponds to left camera number in return tuple
-# @jit(forceobj=True)  # forceobj is used here since the opencv videoCaptures cannot be compiled
+@jit(forceobj=True)  # forceobj is used here since the opencv videoCaptures cannot be compiled
 def readCameras(left, right):
     # Got image boolean and retrieved image
-    gotLeft = left.grab()
-    gotRight = right.grab()
+    gotLeft, gotRight = left.grab(), right.grab()
     # Ensure images were received
     if not gotLeft:
         raise exceptions.CameraReadError("Left")
@@ -31,6 +30,7 @@ def readCameras(left, right):
     return left.retrieve()[1], right.retrieve()[1]
 
 # makes grayscale images of the bgr_images returned by readCameras
+@jit(forceobj=True)
 def getGrayscaleImages(left, right):
     return cv2.cvtColor(left, cv2.COLOR_BGR2GRAY), cv2.cvtColor(right, cv2.COLOR_BGR2GRAY)
 

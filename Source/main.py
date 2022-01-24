@@ -13,7 +13,7 @@ import numba
 from logger import Logger
 import exceptions
 from cameras import readAndShowCameras, getGrayscaleImages
-from visualOdometry import computeDisparity
+from visualOdometry.visualodometry import computeDisparity
 import features
 
 

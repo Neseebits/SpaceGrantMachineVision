@@ -1,6 +1,5 @@
 import numpy as np
 import argparse as ap
-import matplotlib.pyplot as plt
 import cv2
 import os
 from pathlib import Path
@@ -42,8 +41,8 @@ def extract_features(image_path, vector_size=32):
 
 #https://pythonprogramming.net/feature-matching-homography-python-opencv-tutorial/
 def prep_left_and_right_samples():
-    leftImgDir = "./images/left/" + str(return_left_samples()[0])
-    rightImgDir = "./images/right/" + str(return_right_samples()[0])
+    # leftImgDir = "./images/left/" + str(return_left_samples()[0])
+    # rightImgDir = "./images/right/" + str(return_right_samples()[0])
     img1 = cv2.imread(leftImgDir, 0)
     img2 = cv2.imread(rightImgDir, 0)
     orb = cv2.ORB_create()
@@ -105,4 +104,4 @@ def getTranslationY(array_y):
     
     return y_val_sum / len(array_y)
 
-prep_left_and_right_samples()
+# prep_left_and_right_samples()
