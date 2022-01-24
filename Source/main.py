@@ -12,32 +12,44 @@ import numba
 # Custom imports
 from logger import Logger
 import exceptions
-import cameras
+from cameras import readAndShowCameras, getGrayscaleImages, computeDisparity
 import features
+
 
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration
 def main():
+    firstIteration = True
     consecutiveErrors = 0
     iterationCounter = 0
     iterationTimes = []
+    leftImage, rightImage, grayLeftImage, grayRightImage = None, None, None, None
     while True:
         iterationStartTime = time.time()
         try:
-            # Satifies that read images stage of control flow
-            leftImage, rightImage = cameras.readAndShowCameras(leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC, show=False)
+            # need to save previous images (if they exist) for visual odometry
+            prevLeftImage = leftImage
+            prevRightImage = rightImage
+            prevGrayLeftImage = grayLeftImage
+            prevGrayRightImage = grayRightImage
+            # Satisfies that read images stage of control flow
+            leftImage, rightImage = readAndShowCameras(leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC,
+                                                       show=False)
             # grayscale images for feature detection
-            grayLeftImage, grayRightImage = cameras.getGrayscaleImages(leftImage, rightImage)
-            # feature points for left and right images
-            # the point at index [0] in both is the same real life feature
-            # leftFeaturePoints, rightFeaturePoints = features.computeMatchingPoints(grayLeftImage, grayRightImage, orb, matcher, showMatches=True)
+            grayLeftImage, grayRightImage = getGrayscaleImages(leftImage, rightImage)
 
-            # TODO
-            # Fill in remainder of functionality
+            if not firstIteration:
+                # feature points for left and right images
+                # the point at index [0], [1], [2], etc. in both is the same real life feature,
+                leftFPoints, rightFPoints = features.computeMatchingPoints(grayLeftImage, grayRightImage, orb, matcher,
+                                                                       showMatches=True, verbose=True)
 
+                # this disparity map calculation wouldn't normally be here since we only really care about the depth values
+                disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=False)
 
-            # this disparity map calculation wouldn't normally be here since we only really care about the depth values
-            disparityMap = cameras.computeDisparity(stereo, grayLeftImage, grayRightImage, show=False)
+                # TODO
+                # Fill in remainder of functionality
+
 
 
             # ADDITIONAL FUNCTIONS ABOVE
@@ -47,23 +59,28 @@ def main():
             keyPressed = cv2.waitKey(10) & 0xFF
             if keyPressed == 27:
                 raise exceptions.KeyboardInterrupt("ESC")  # Quit on ESC
-        except exceptions.KeyboardInterrupt as e: # Kills the loop if a keyboardInterrupt occurs
+        except exceptions.KeyboardInterrupt as e:  # Kills the loop if a keyboardInterrupt occurs
             Logger.log("User killed loop with: " + e.getKey())
             break
         except Exception as e:
             # Possibly instead of restarting, we might want to look into
-            Logger.log(str(e) + " -> Occured in primary operation loop of program. Failed iterations in a row: {}".format(consecutiveErrors))
-            consecutiveErrors += 1 
-            if(consecutiveErrors > errorTolerance):
+            Logger.log(
+                str(e) + " -> Occured in primary operation loop of program. Failed iterations in a row: {}".format(
+                    consecutiveErrors))
+            consecutiveErrors += 1
+            if (consecutiveErrors > errorTolerance):
                 Logger.log("RESTARTING PRIMARY CONTROL LOOP")
                 break
         if iterationCounter < iterationsToAverage:
             iterationTimes.append(time.time() - iterationStartTime)
             iterationCounter += 1
         else:
-            Logger.log("Average iteration time: {} {}".format(round((sum(iterationTimes)/iterationCounter)*1000, 1), "ms"))
+            Logger.log(
+                "Average iteration time: {} {}".format(round((sum(iterationTimes) / iterationCounter) * 1000, 1), "ms"))
             iterationCounter = 0
             iterationTimes = []
+        firstIteration = False
+
 
 # Function that will run some code one time before anything else
 # Primarily used for creating some files and/or testing some code
@@ -77,6 +94,7 @@ def optional():
 
     print("Finished running any optional code")
 
+
 def loadFiles():
     # one time file loading for the camera intrinsic matrices and undistortion coeff
     calibrationPath = "Data/Calibration/"
@@ -89,21 +107,22 @@ def loadFiles():
 
     return leftK, rightK, leftDistC, rightDistC
 
+
 if __name__ == "__main__":
     optional()
-    Logger.init("log.log") # Starts the logger and sets the logger to log to the specified file.
+    Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
     # Global constants for any hyperparameters for the code or physical constants
     # Define any global constants
-    leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0) #      cv2.CAP_DSHOW changes internal api stuff for opencv
-    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1) #   add/remove cv2.CAP_DSHOW as needed for your system
+    leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)  # cv2.CAP_DSHOW changes internal api stuff for opencv
+    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)  # add/remove cv2.CAP_DSHOW as needed for your system
     # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
-    errorTolerance = 2 # defines the amount of skipped/incomplete iterations before the loop is restarted
-    iterationsToAverage = 9 # use n+1 to calculate true number averaged
+    errorTolerance = 2  # defines the amount of skipped/incomplete iterations before the loop is restarted
+    iterationsToAverage = 9  # use n+1 to calculate true number averaged
 
     # defining opencv objects
-    orb = cv2.ORB_create(nfeatures = 1000) # orb feature detector object
-    matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True) # matcher object
-    stereo = cv2.StereoSGBM_create() # stereo object
+    orb = cv2.ORB_create(nfeatures=1000)  # orb feature detector object
+    matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)  # matcher object
+    stereo = cv2.StereoSGBM_create()  # stereo object
 
     leftK, rightK, leftDistC, rightDistC = loadFiles()
 

@@ -9,6 +9,7 @@ import cv2
 
 # Custom imports
 import exceptions
+from logger import Logger
 
 # get the height and width dimensions from an image
 def getHeightWidth(img):
@@ -30,7 +31,7 @@ def readImagesFromFolder(folder, recurse):
                     if image is not None:
                         allImages.append(image)
                 except: 
-                    print("Attempted to open file: {}".format(file))
+                    Logger.log("Attempted to open file: {}".format(file))
             # If the want to get images recursively
             if recurse:
                 for dir in dirs: # Loop over all directorys in the given directory and perform the same function
