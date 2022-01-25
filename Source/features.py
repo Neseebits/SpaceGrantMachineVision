@@ -83,8 +83,8 @@ def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=10
         if showMatches:
             matchedImg = cv2.drawMatches(left, leftKp, right, rightKp, sortedMatches, None, flags=2)
             cv2.imshow("Matched Features", matchedImg)
-        return left_pts, right_pts
+        return left_pts, right_pts, leftKp, leftDesc, rightKp, rightDesc
     except: # generic exception catcher, just return no list of points
         Logger.log("Generating an exception inside of computeMatchingPoints")
         # Logger.log(e)
-        return [], []
+        return None, None, None, None, None, None

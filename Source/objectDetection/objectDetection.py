@@ -41,11 +41,8 @@ def isFeatureDense(x, y, image, kp, featurePerPixel=0.1, width=30, height=30):
     for keypoint in kp:
         kx = keypoint[0]
         ky = keypoint[1]
-        if kx < leftBound or kx > rightBound:
-            break
-        if ky < topBound and ky > bottomBound:
-            break
-        kpInRegion += 1
+        if (leftBound < kx < rightBound) and (topBound < ky < bottomBound):
+            kpInRegion += 1
     density = kpInRegion / (width * height)
     if density >= featurePerPixel:
         return True, leftBound, topBound, rightBound, bottomBound

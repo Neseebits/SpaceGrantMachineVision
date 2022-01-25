@@ -12,7 +12,7 @@ from numba import jit
 from Source import exceptions
 
 # compute the disparity map of the two grayscale images given
-# this uses the cv2.StereoBM object
+# takes a stereo matcher object and two grayscale images
 @jit(forceobj=True)
 def computeDisparity(stereo, left, right, show=False):
     # TODO
@@ -23,36 +23,39 @@ def computeDisparity(stereo, left, right, show=False):
         cv2.imshow("Disparity map", disparity)
     return disparity
 
+# BELOW IS DONG LEES VISUAL ODOMETRY CODE
+# ==================================================
+
 # pretty sure this is legacy stuff we do not need anymore
-# #Returns the list of file names from the left folder.
-# def return_left_samples():
-#     listOfFilesLeft = os.listdir(os.path.join(os.path.dirname(__file__) + "./images/left"))
-#     listOfFilesLeft.sort()
-#     return listOfFilesLeft
-#
-# #Returns the list of file names from the right folder.
-# def return_right_samples():
-#     listOfFilesRight = os.listdir(os.path.join(os.path.dirname(__file__) + "./images/right"))
-#     listOfFilesRight.sort()
-#     return listOfFilesRight
+#Returns the list of file names from the left folder.
+def return_left_samples():
+    listOfFilesLeft = os.listdir(os.path.join(os.path.dirname(__file__) + "./images/left"))
+    listOfFilesLeft.sort()
+    return listOfFilesLeft
+
+#Returns the list of file names from the right folder.
+def return_right_samples():
+    listOfFilesRight = os.listdir(os.path.join(os.path.dirname(__file__) + "./images/right"))
+    listOfFilesRight.sort()
+    return listOfFilesRight
 
 # this is implemented with orb in the
-# #https://medium.com/machine-learning-world/feature-extraction-and-similar-image-search-with-opencv-for-newbies-3c59796bf774
-# #Extracts features of an image via using KAZE.
-# def extract_features(image_path, vector_size=32):
-#     print("The passed image path is: " + str(image_path))
-#     image = cv2.imread(image_path, 0)
-#     alg = cv2.KAZE_create()
-#     kps = alg.detect(image)
-#     kps = sorted(kps, key=lambda x: -x.response)[:vector_size]
-#     kps, dsc = alg.compute(image, kps)
-#     needed_size = (vector_size * 64)
-#     return kps
+#https://medium.com/machine-learning-world/feature-extraction-and-similar-image-search-with-opencv-for-newbies-3c59796bf774
+#Extracts features of an image via using KAZE.
+def extract_features(image_path, vector_size=32):
+    print("The passed image path is: " + str(image_path))
+    image = cv2.imread(image_path, 0)
+    alg = cv2.KAZE_create()
+    kps = alg.detect(image)
+    kps = sorted(kps, key=lambda x: -x.response)[:vector_size]
+    kps, dsc = alg.compute(image, kps)
+    needed_size = (vector_size * 64)
+    return kps
 
 #https://pythonprogramming.net/feature-matching-homography-python-opencv-tutorial/
 def prep_left_and_right_samples():
-    # leftImgDir = "./images/left/" + str(return_left_samples()[0])
-    # rightImgDir = "./images/right/" + str(return_right_samples()[0])
+    leftImgDir = "./images/left/" + str(return_left_samples()[0])
+    rightImgDir = "./images/right/" + str(return_right_samples()[0])
     img1 = cv2.imread(leftImgDir, 0)
     img2 = cv2.imread(rightImgDir, 0)
     orb = cv2.ORB_create()
@@ -113,5 +116,3 @@ def getTranslationY(array_y):
         y_val_sum += element
     
     return y_val_sum / len(array_y)
-
-# prep_left_and_right_samples()

@@ -25,33 +25,42 @@ def main():
     iterationCounter = 0
     iterationTimes = []
     cameraFrameTimes = []
+    featureFrameTimes = []
     leftImage, rightImage, grayLeftImage, grayRightImage = None, None, None, None
+    leftPts, rightPts, leftKp, leftDesc, rightKp, rightDesc = None, None, None, None, None, None
     while True:
         iterationStartTime = time.time()
         try:
             # need to save previous images (if they exist) for visual odometry
-            prevLeftImage = leftImage
-            prevRightImage = rightImage
-            prevGrayLeftImage = grayLeftImage
-            prevGrayRightImage = grayRightImage
+            prevLeftImage, prevRightImage = leftImage, rightImage
+            prevGrayLeftImage, prevGrayRightImage = grayLeftImage, grayRightImage
 
-            # Satisfies that read images stage of control flow
+            # save previous feature information
+            prevLeftPts, prevRightPts = leftPts, rightPts
+            prevLeftKp, prevRightKp = leftKp, rightKp
+            prevLeftDesc, prevRightDesc = leftDesc, rightDesc
+
             cameraStartTime = time.time()
+            # Satisfies that read images stage of control flow
             leftImage, rightImage = readAndShowCameras(leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC,
                                                        show=True)
-            cameraFrameTimes.append(time.time() - cameraStartTime)
-
             # grayscale images for feature detection
             grayLeftImage, grayRightImage = getGrayscaleImages(leftImage, rightImage)
+            cameraFrameTimes.append(time.time() - cameraStartTime)
+
+            featureStartTime = time.time()
+            # feature points for left and right images
+            # the point at index [0], [1], [2], etc. in both is the same real life feature,
+            leftPts, rightPts, leftKp, leftDesc, rightKp, rightDesc = computeMatchingPoints(grayLeftImage,
+                                                                                            grayRightImage, orb,
+                                                                                            matcher, showMatches=True)
+            featureFrameTimes.append(time.time() - featureStartTime)
 
             # all additional functionality should be present within the === comments
             # additional data that needs to be stored for each iteration should be handled above
             #===========================================================================================================
             if not firstIteration:
-                # feature points for left and right images
-                # the point at index [0], [1], [2], etc. in both is the same real life feature,
-                leftFPoints, rightFPoints = computeMatchingPoints(grayLeftImage, grayRightImage, orb, matcher,
-                                                                       showMatches=True)
+
                 # this disparity map calculation should maybe get removed since we ??only?? care about the depth values
                 disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=True)
 
@@ -85,10 +94,12 @@ def main():
         else:
             iterTimeStr = "Avg iteration: {} {}".format(round((sum(iterationTimes) / iterationCounter) * 1000, 1), "ms")
             cameraTimeStr = ", Avg frame: {} {}".format(round((sum(cameraFrameTimes) / iterationCounter) * 1000, 1), 'ms')
-            Logger.log(iterTimeStr + cameraTimeStr)
+            featureTimeStr = ", Avg features: {} {}".format(round((sum(featureFrameTimes) / iterationCounter) * 1000, 1), 'ms')
+            Logger.log(iterTimeStr + cameraTimeStr + featureTimeStr)
             iterationCounter = 0
             iterationTimes = []
             cameraFrameTimes = []
+            featureFrameTimes = []
         firstIteration = False
 
 
@@ -130,7 +141,7 @@ if __name__ == "__main__":
     iterationsToAverage = 9  # use n+1 to calculate true number averaged
 
     # defining opencv objects
-    orb = cv2.ORB_create(nfeatures=2000)  # orb feature detector object
+    orb = cv2.ORB_create(nfeatures=1000)  # orb feature detector object
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)  # matcher object
     stereo = cv2.StereoSGBM_create()  # stereo object
 
