@@ -1,6 +1,7 @@
 from datetime import datetime
 from time import sleep
 import threading
+from numba import jit
 
 class Logger:
     shouldThreadJoin = False

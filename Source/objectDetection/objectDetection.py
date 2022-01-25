@@ -20,7 +20,7 @@ from Source.features import getPointsFromKeypoints, getImageKeyDesc, getImagePai
 # returns Boolean, x1, y1, x2, y2
 # where x1, y1, x2, y2 are the top left and bottom right image cordinates
 # if the boolean is False the points are all -1
-def isFeatureDense(x, y, image, kp, width=30, height=30):
+def isFeatureDense(x, y, image, kp, featurePerPixel=0.1, width=30, height=30):
     # check if x and y are inside of the image
     # determine the top left and bottom right bounding box cordinates for the region
     iheight, iwidth = utility.getHeightWidth(image)
@@ -46,7 +46,11 @@ def isFeatureDense(x, y, image, kp, width=30, height=30):
         if ky < topBound and ky > bottomBound:
             break
         kpInRegion += 1
-
+    density = kpInRegion / (width * height)
+    if density >= featurePerPixel:
+        return True, leftBound, topBound, rightBound, bottomBound
+    else:
+        return False, -1, -1, -1, -1
 
 # takes an image and returns bounding box cordinates
 def findFeatureDensity(image, featureDetector, showRegions=False, verbose=False):
@@ -56,3 +60,4 @@ def findFeatureDensity(image, featureDetector, showRegions=False, verbose=False)
     # Given the set of points 'bin' the image into regions and compute the number of points in each region
     # If a given region satisfies the given density of features / pixel than the region is determined to be of interest
     # The function will then return the bounding box cordinates for those regions of interest
+

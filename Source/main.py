@@ -14,7 +14,7 @@ from logger import Logger
 import exceptions
 from cameras import readAndShowCameras, getGrayscaleImages
 from visualOdometry.visualodometry import computeDisparity
-import features
+from features import computeMatchingPoints
 
 
 # Primary function where our main control flow will happen
@@ -34,11 +34,13 @@ def main():
             prevRightImage = rightImage
             prevGrayLeftImage = grayLeftImage
             prevGrayRightImage = grayRightImage
+
             # Satisfies that read images stage of control flow
             cameraStartTime = time.time()
             leftImage, rightImage = readAndShowCameras(leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC,
                                                        show=True)
             cameraFrameTimes.append(time.time() - cameraStartTime)
+
             # grayscale images for feature detection
             grayLeftImage, grayRightImage = getGrayscaleImages(leftImage, rightImage)
 
@@ -48,7 +50,7 @@ def main():
             if not firstIteration:
                 # feature points for left and right images
                 # the point at index [0], [1], [2], etc. in both is the same real life feature,
-                leftFPoints, rightFPoints = features.computeMatchingPoints(grayLeftImage, grayRightImage, orb, matcher,
+                leftFPoints, rightFPoints = computeMatchingPoints(grayLeftImage, grayRightImage, orb, matcher,
                                                                        showMatches=True)
                 # this disparity map calculation should maybe get removed since we ??only?? care about the depth values
                 disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=True)
@@ -81,11 +83,9 @@ def main():
             iterationTimes.append(time.time() - iterationStartTime)
             iterationCounter += 1
         else:
-            Logger.log(
-                "Average iteration time: {} {}".format(round((sum(iterationTimes) / iterationCounter) * 1000, 1), "ms"))
-            Logger.log(
-                "    -> Average camera frame time: {} {}".format(round((sum(cameraFrameTimes) / iterationCounter) * 1000, 1), 'ms')
-            )
+            iterTimeStr = "Avg iteration: {} {}".format(round((sum(iterationTimes) / iterationCounter) * 1000, 1), "ms")
+            cameraTimeStr = ", Avg frame: {} {}".format(round((sum(cameraFrameTimes) / iterationCounter) * 1000, 1), 'ms')
+            Logger.log(iterTimeStr + cameraTimeStr)
             iterationCounter = 0
             iterationTimes = []
             cameraFrameTimes = []
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     iterationsToAverage = 9  # use n+1 to calculate true number averaged
 
     # defining opencv objects
-    orb = cv2.ORB_create(nfeatures=1000)  # orb feature detector object
+    orb = cv2.ORB_create(nfeatures=2000)  # orb feature detector object
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)  # matcher object
     stereo = cv2.StereoSGBM_create()  # stereo object
 

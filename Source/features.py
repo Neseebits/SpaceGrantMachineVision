@@ -17,39 +17,30 @@ import utility
 # function that given to images computes their features
 # this does not do any filtering
 # takes two grayscale images and a cv2 feature detector
+@jit(forceobj=True)
 def getImagePairKeyDesc(left, right, featureDetector):
-    kp1, des1 = featureDetector.detectAndCompute(left, None)
-    kp2, des2 = featureDetector.detectAndCompute(right, None)
+    kp1, des1 = getImageKeyDesc(left, featureDetector)
+    kp2, des2 = getImageKeyDesc(right, featureDetector)
     return kp1, des1, kp2, des2
 
 # get features for a single image
 # this does not do any filtering
 # takes a single greyscale image
+@jit(forceobj=True)
 def getImageKeyDesc(image, featureDetector):
-    try:
-        return featureDetector.detectAndCompute(image, None)
-    except:
-        raise exceptions.FeatureMatchingError("Error running detect and compute in GetImageKeyDesc")
+    return featureDetector.detectAndCompute(image, None)
 
 # get point cordinates from a list of keypoints
 def getPointsFromKeypoints(kp):
-    try:
-        return cv2.KeyPoint_convert(kp)
-    except:
-        raise exceptions.FeatureMatchingError("Error converting array cv2.KeyPoint to array of array points")
+    return cv2.KeyPoint_convert(kp)
 
-
-# TODO
-# add comments
-
-# ALL FUNCTIONS BELOW USED IN COMPUTE MATCHING POINTS
-# =================================================================================
 # sorts matched keypoints returned directly from the cv2.matcher object
 # this sorts them by distance
 def sortMatches(matches):
     return np.array(sorted(matches, key=lambda x: x.distance))
 
 # gets the image cordinates out of the matched keypoints
+@jit(forceobj=True)
 def getPointsFromMatches(matches, leftKp, rightKp):
     return [leftKp[mat.queryIdx].pt for mat in matches], [rightKp[mat.trainIdx].pt for mat in matches]
 
@@ -93,7 +84,7 @@ def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=10
             matchedImg = cv2.drawMatches(left, leftKp, right, rightKp, sortedMatches, None, flags=2)
             cv2.imshow("Matched Features", matchedImg)
         return left_pts, right_pts
-    except Exception as e: # generic exception catcher, just return no list of points
+    except: # generic exception catcher, just return no list of points
         Logger.log("Generating an exception inside of computeMatchingPoints")
         # Logger.log(e)
         return [], []
