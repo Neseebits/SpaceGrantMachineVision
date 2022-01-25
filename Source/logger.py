@@ -66,6 +66,9 @@ class Logger:
         Args:
             message (str): The message to be output to the console and/or file
         """
+        # enables .log to handle Exception types directly
+        if isinstance(message, Exception):
+            message = str(message)
         cls.buffer.append(message)
     
     @classmethod

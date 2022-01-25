@@ -71,40 +71,29 @@ def ratioTest(kpMatches, ratio):
             goodDistanceDiffs.append(m)
         else:
             break
-    return sorted(goodDistanceDiffs, key=lambda x: x.distance)
+    return goodDistanceDiffs
 
 # funtion that computes the matching features between two images and returns the corresponding points
 # takes two grayscale images, a feature detector, and a matcher
-def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=3.0, showMatches=False, verbose=False):
-    if verbose:
-        Logger.log("computeMatchingPoints running...")
+# the showMatches optional parameter shows the total features and not the ones acquired through the ratio test
+def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=10.0, showMatches=False):
     try:
-        if verbose:
-            Logger.log("    -> Generating keypoints and descriptors then matching keypoints")
         leftKp, leftDesc, rightKp, rightDesc = getImagePairKeyDesc(left, right, featureDetector)
         matches = featureMatcher.match(leftDesc, rightDesc)
         if len(matches) == 0:
             raise exceptions.FeatureMatchingError("computeMatchingPoints: No matched features present in the matched features ")
-        if verbose:
-            Logger.log("          DONE")
-            Logger.log("    -> Sorting matches and performing the ratio test")
         # sort the matches
         sortedMatches = sortMatches(matches)
         # perform ratio test on matching keypoints
         ratioMatches = ratioTest(sortedMatches, ratio=ratio)
-        if verbose:
-            Logger.log("          DONE")
-            Logger.log("    -> Separating image points from matches")
         # extract image cordinates of matches
         left_pts, right_pts = getPointsFromMatches(ratioMatches, leftKp, rightKp)
         # show the output
-        if verbose:
-            Logger.log("          DONE")
         if showMatches:
-            matchedImg = cv2.drawMatches(left, left_pts, right, right_pts, ratioMatches, None)
+            matchedImg = cv2.drawMatches(left, leftKp, right, rightKp, sortedMatches, None, flags=2)
             cv2.imshow("Matched Features", matchedImg)
         return left_pts, right_pts
     except Exception as e: # generic exception catcher, just return no list of points
         Logger.log("Generating an exception inside of computeMatchingPoints")
-        Logger.log(e)
+        # Logger.log(e)
         return [], []

@@ -35,25 +35,27 @@ def main():
             prevGrayRightImage = grayRightImage
             # Satisfies that read images stage of control flow
             leftImage, rightImage = readAndShowCameras(leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC,
-                                                       show=False)
+                                                       show=True)
             # grayscale images for feature detection
             grayLeftImage, grayRightImage = getGrayscaleImages(leftImage, rightImage)
 
+            # all additional functionality should be present within the === comments
+            # additional data that needs to be stored for each iteration should be handled above
+            #===========================================================================================================
             if not firstIteration:
                 # feature points for left and right images
                 # the point at index [0], [1], [2], etc. in both is the same real life feature,
                 leftFPoints, rightFPoints = features.computeMatchingPoints(grayLeftImage, grayRightImage, orb, matcher,
-                                                                       showMatches=True, verbose=True)
-
-                # this disparity map calculation wouldn't normally be here since we only really care about the depth values
-                disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=False)
+                                                                       showMatches=True)
+                # this disparity map calculation should maybe get removed since we ??only?? care about the depth values
+                disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=True)
 
                 # TODO
                 # Fill in remainder of functionality
 
 
 
-            # ADDITIONAL FUNCTIONS ABOVE
+            #===========================================================================================================
             # Resets the consecutive error count if a full iteration is completed
             consecutiveErrors = 0
             # cv2.waitKey is needed for opencv to properly display images (think of it like a timer or interrupt)
