@@ -24,6 +24,7 @@ def main():
     consecutiveErrors = 0
     iterationCounter = 0
     iterationTimes = []
+    cameraFrameTimes = []
     leftImage, rightImage, grayLeftImage, grayRightImage = None, None, None, None
     while True:
         iterationStartTime = time.time()
@@ -34,8 +35,10 @@ def main():
             prevGrayLeftImage = grayLeftImage
             prevGrayRightImage = grayRightImage
             # Satisfies that read images stage of control flow
+            cameraStartTime = time.time()
             leftImage, rightImage = readAndShowCameras(leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC,
                                                        show=True)
+            cameraFrameTimes.append(time.time() - cameraStartTime)
             # grayscale images for feature detection
             grayLeftImage, grayRightImage = getGrayscaleImages(leftImage, rightImage)
 
@@ -80,8 +83,12 @@ def main():
         else:
             Logger.log(
                 "Average iteration time: {} {}".format(round((sum(iterationTimes) / iterationCounter) * 1000, 1), "ms"))
+            Logger.log(
+                "    -> Average camera frame time: {} {}".format(round((sum(cameraFrameTimes) / iterationCounter) * 1000, 1), 'ms')
+            )
             iterationCounter = 0
             iterationTimes = []
+            cameraFrameTimes = []
         firstIteration = False
 
 

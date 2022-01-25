@@ -41,7 +41,7 @@ def getGrayscaleImages(left, right):
 # Function makes a window which displays both camera feeds next to each other
 # Takes the images as two arguments: left, right images
 # Has no return value
-# @jit(forceobj=True)
+@jit(forceobj=True)
 def showCameras(left, right):
     if (left.shape != right.shape):
         minHeight = min(left.shape[0], right.shape[0])
