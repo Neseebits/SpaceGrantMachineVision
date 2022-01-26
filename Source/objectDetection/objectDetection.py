@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+import math
 
 # Additional libs
 import numpy as np
@@ -20,10 +21,10 @@ from Source.features import getPointsFromKeypoints, getImageKeyDesc, getImagePai
 # returns Boolean, x1, y1, x2, y2
 # where x1, y1, x2, y2 are the top left and bottom right image cordinates
 # if the boolean is False the points are all -1
-def isFeatureDense(x, y, image, kp, featurePerPixel=0.1, width=30, height=30):
+@jit(nopython=True)
+def isFeatureDense(x, y, iwidth, iheight, kp, width, height, featurePerPixel):
     # check if x and y are inside of the image
     # determine the top left and bottom right bounding box cordinates for the region
-    iheight, iwidth = utility.getHeightWidth(image)
     leftBound = x - width / 2
     rightBound = x + width / 2
     if leftBound < 0:
@@ -37,24 +38,69 @@ def isFeatureDense(x, y, image, kp, featurePerPixel=0.1, width=30, height=30):
     if bottomBound >= iheight:
         bottomBound = iheight - 1
     # iterate over keypoints, determine if within boundary
-    kpInRegion = 0
+    kpInRegion = 0.0
     for keypoint in kp:
         kx = keypoint[0]
         ky = keypoint[1]
         if (leftBound < kx < rightBound) and (topBound < ky < bottomBound):
-            kpInRegion += 1
+            kpInRegion += 1.0
     density = kpInRegion / (width * height)
     if density >= featurePerPixel:
         return True, leftBound, topBound, rightBound, bottomBound
     else:
         return False, -1, -1, -1, -1
 
-# takes an image and returns bounding box cordinates
-def findFeatureDensity(image, featureDetector, showRegions=False, verbose=False):
-    kp, des = getImageKeyDesc(image, featureDetector)
-    pts = getPointsFromKeypoints(kp)
-    # TODO
-    # Given the set of points 'bin' the image into regions and compute the number of points in each region
-    # If a given region satisfies the given density of features / pixel than the region is determined to be of interest
-    # The function will then return the bounding box cordinates for those regions of interest
+@jit(nopython=True)
+def getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBins, binSize, featuresPerPixel):
+    # bounding boxes are stored as [[x1, y1], [x2, y2]]
+    boundingBoxes = []
+    for i in range(horzBins):
+        for j in range(vertBins):
+            x = i * binSize + 0.5 * binSize
+            y = j * binSize + 0.5 * binSize
+            dense, x1, y1, x2, y2 = isFeatureDense(x, y, imageWidth, imageHeight, pts, binSize, binSize,
+                                                   featuresPerPixel)
+            if dense:
+                boundingBoxes.append([[x1, y1], [x2, y2]])
+    return boundingBoxes
 
+# takes an image and returns bounding box cordinates
+def findFeatureDenseBoundingBoxes(image, pts, binSize=30.0, featuresPerPixel=0.01, show=False):
+    # compute dimensional information
+    imageHeight, imageWidth = image.shape[0], image.shape[1]
+    horzBins, vertBins = math.ceil(imageWidth / binSize), math.ceil(imageHeight / binSize)
+
+    # compute the bounding boxes where there are features exceeding a threshold
+    boundingBoxes = getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBins, binSize, featuresPerPixel)
+
+    if show:
+        drawBoundingBoxes(image, boundingBoxes)
+
+    return boundingBoxes
+
+
+# gets the cordinates out of the bounding box list/array
+def getBoundingBoxCords(box):
+    return int(box[0][0]), int(box[0][1]), int(box[1][0]), int(box[1][1])
+
+# makes points out of the bounding box cordinates
+def getBoundingBoxPoints(box):
+    x1, y1, x2, y2 = getBoundingBoxCords(box)
+    return (x1, y1), (x2, y1), (x2, y2), (x1, y2)
+
+# image is a cv2 image, which is a numpy array
+# boundingBoxes is as follows
+#        [ [x1, y1], [x2, y2] ]
+#        where x1, y1, x2, y2 are any number
+# the number type gets sanitized upon boundingBox load cordinates
+def drawBoundingBoxes(rawImage, boundingBoxes):
+    image = np.copy(rawImage)
+    color = (0, 0, 255)
+    thickness = 2
+    for box in boundingBoxes:
+        p1, p2, p3, p4 = getBoundingBoxPoints(box)
+        cv2.line(image, p1, p2, color, thickness)
+        cv2.line(image, p2, p3, color, thickness)
+        cv2.line(image, p3, p4, color, thickness)
+        cv2.line(image, p4, p1, color, thickness)
+        cv2.imshow("Bounding boxes", image)
