@@ -14,8 +14,12 @@ from logger import Logger
 import exceptions
 from cameras import readAndShowCameras, getGrayscaleImages
 from visualOdometry.visualodometry import computeDisparity
-from features import computeMatchingPoints
+from features import computeMatchingPoints, getPointsFromKeypoints
+from objectDetection.objectDetection import findFeatureDenseBoundingBoxes
 
+# takes an array of times and returns the average over a size
+def getAvgTimeArr(arr, size):
+    return round((sum(arr) / size) * 1000, 1)
 
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration
@@ -26,8 +30,10 @@ def main():
     iterationTimes = []
     cameraFrameTimes = []
     featureFrameTimes = []
+    featureDenseFrameTimes = []
     leftImage, rightImage, grayLeftImage, grayRightImage = None, None, None, None
     leftPts, rightPts, leftKp, leftDesc, rightKp, rightDesc = None, None, None, None, None, None
+    featureDenseBoundingBoxes = None
     while True:
         iterationStartTime = time.time()
         try:
@@ -39,6 +45,7 @@ def main():
             prevLeftPts, prevRightPts = leftPts, rightPts
             prevLeftKp, prevRightKp = leftKp, rightKp
             prevLeftDesc, prevRightDesc = leftDesc, rightDesc
+            prevFeatureDenseBoundingBoxes = featureDenseBoundingBoxes
 
             cameraStartTime = time.time()
             # Satisfies that read images stage of control flow
@@ -53,8 +60,14 @@ def main():
             # the point at index [0], [1], [2], etc. in both is the same real life feature,
             leftPts, rightPts, leftKp, leftDesc, rightKp, rightDesc = computeMatchingPoints(grayLeftImage,
                                                                                             grayRightImage, orb,
-                                                                                            matcher, showMatches=True)
+                                                                                            matcher, show=True)
             featureFrameTimes.append(time.time() - featureStartTime)
+
+            featureDenseStartTime = time.time()
+            # acquires the bounding box cordinates for areas of the image where there are dense features
+            featureDenseBoundingBoxes = findFeatureDenseBoundingBoxes(leftImage, getPointsFromKeypoints(leftKp),
+                                                                      binSize=30.0, featuresPerPixel=0.01, show=True)
+            featureDenseFrameTimes.append(time.time() - featureDenseStartTime)
 
             # all additional functionality should be present within the === comments
             # additional data that needs to be stored for each iteration should be handled above
@@ -66,8 +79,6 @@ def main():
 
                 # TODO
                 # Fill in remainder of functionality
-
-
 
             #===========================================================================================================
             # Resets the consecutive error count if a full iteration is completed
@@ -92,14 +103,17 @@ def main():
             iterationTimes.append(time.time() - iterationStartTime)
             iterationCounter += 1
         else:
-            iterTimeStr = "Avg iteration: {} {}".format(round((sum(iterationTimes) / iterationCounter) * 1000, 1), "ms")
-            cameraTimeStr = ", Avg frame: {} {}".format(round((sum(cameraFrameTimes) / iterationCounter) * 1000, 1), 'ms')
-            featureTimeStr = ", Avg features: {} {}".format(round((sum(featureFrameTimes) / iterationCounter) * 1000, 1), 'ms')
-            Logger.log(iterTimeStr + cameraTimeStr + featureTimeStr)
+            iterTimeStr = "Avg iteration: {} {}".format(getAvgTimeArr(iterationTimes, iterationCounter), "ms")
+            cameraTimeStr = " => Avg frame: {} {}".format(getAvgTimeArr(cameraFrameTimes, iterationCounter), 'ms')
+            featureTimeStr = ", Avg features: {} {}".format(getAvgTimeArr(featureFrameTimes, iterationCounter), 'ms')
+            objectDectTimeStr = ", Avg feature density: {} {}".format(getAvgTimeArr(featureDenseFrameTimes,
+                                                                                    iterationCounter), 'ms')
+            Logger.log(iterTimeStr + cameraTimeStr + featureTimeStr + objectDectTimeStr)
             iterationCounter = 0
             iterationTimes = []
             cameraFrameTimes = []
             featureFrameTimes = []
+            featureDenseFrameTimes = []
         firstIteration = False
 
 

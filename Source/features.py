@@ -67,7 +67,7 @@ def ratioTest(kpMatches, ratio):
 # funtion that computes the matching features between two images and returns the corresponding points
 # takes two grayscale images, a feature detector, and a matcher
 # the showMatches optional parameter shows the total features and not the ones acquired through the ratio test
-def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=10.0, showMatches=False):
+def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=10.0, show=False):
     try:
         leftKp, leftDesc, rightKp, rightDesc = getImagePairKeyDesc(left, right, featureDetector)
         matches = featureMatcher.match(leftDesc, rightDesc)
@@ -80,7 +80,7 @@ def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=10
         # extract image cordinates of matches
         left_pts, right_pts = getPointsFromMatches(ratioMatches, leftKp, rightKp)
         # show the output
-        if showMatches:
+        if show:
             matchedImg = cv2.drawMatches(left, leftKp, right, rightKp, sortedMatches, None, flags=2)
             cv2.imshow("Matched Features", matchedImg)
         return left_pts, right_pts, leftKp, leftDesc, rightKp, rightDesc
