@@ -10,8 +10,8 @@ import cv2
 from numba import jit, njit
 
 # Custom  imports
-from Source.logger import Logger
-from Source import exceptions
+import logger
+import exceptions
 
 
 # gets the coordinates out of the bounding box list/array

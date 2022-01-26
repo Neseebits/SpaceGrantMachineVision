@@ -10,11 +10,11 @@ import cv2
 from numba import jit, njit
 
 # Custom  imports
-from Source.logger import Logger
-from Source import exceptions
-from Source import utility
-from Source.features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
-from Source.boundingBoxes import drawBoundingBoxes
+import logger
+import exceptions
+import utility
+from features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
+from boundingBoxes import drawBoundingBoxes
 
 
 # given a point in x, y cordinates, an image, and an array of keypoints
