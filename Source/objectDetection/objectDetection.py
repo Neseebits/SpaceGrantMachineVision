@@ -14,6 +14,7 @@ from Source.logger import Logger
 from Source import exceptions
 from Source import utility
 from Source.features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
+from Source.boundingBoxes import drawBoundingBoxes
 
 
 # given a point in x, y cordinates, an image, and an array of keypoints
@@ -50,6 +51,8 @@ def isFeatureDense(x, y, iwidth, iheight, kp, width, height, featurePerPixel):
     else:
         return False, -1, -1, -1, -1
 
+# iterates over every bin in the image and determines if that bin is feature dense
+# if the bin is feature dense, it will save its bounding box
 @jit(nopython=True)
 def getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBins, binSize, featuresPerPixel):
     # bounding boxes are stored as [[x1, y1], [x2, y2]]
@@ -64,43 +67,18 @@ def getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBin
                 boundingBoxes.append([[x1, y1], [x2, y2]])
     return boundingBoxes
 
-# takes an image and returns bounding box cordinates
+# takes an image and returns bounding box coordinates
 def findFeatureDenseBoundingBoxes(image, pts, binSize=30.0, featuresPerPixel=0.01, show=False):
     # compute dimensional information
     imageHeight, imageWidth = image.shape[0], image.shape[1]
     horzBins, vertBins = math.ceil(imageWidth / binSize), math.ceil(imageHeight / binSize)
 
     # compute the bounding boxes where there are features exceeding a threshold
-    boundingBoxes = getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBins, binSize, featuresPerPixel)
+    boundingBoxes = getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBins, binSize,
+                                                 featuresPerPixel)
 
     if show:
         drawBoundingBoxes(image, boundingBoxes)
 
     return boundingBoxes
 
-
-# gets the cordinates out of the bounding box list/array
-def getBoundingBoxCords(box):
-    return int(box[0][0]), int(box[0][1]), int(box[1][0]), int(box[1][1])
-
-# makes points out of the bounding box cordinates
-def getBoundingBoxPoints(box):
-    x1, y1, x2, y2 = getBoundingBoxCords(box)
-    return (x1, y1), (x2, y1), (x2, y2), (x1, y2)
-
-# image is a cv2 image, which is a numpy array
-# boundingBoxes is as follows
-#        [ [x1, y1], [x2, y2] ]
-#        where x1, y1, x2, y2 are any number
-# the number type gets sanitized upon boundingBox load cordinates
-def drawBoundingBoxes(rawImage, boundingBoxes):
-    image = np.copy(rawImage)
-    color = (0, 0, 255)
-    thickness = 2
-    for box in boundingBoxes:
-        p1, p2, p3, p4 = getBoundingBoxPoints(box)
-        cv2.line(image, p1, p2, color, thickness)
-        cv2.line(image, p2, p3, color, thickness)
-        cv2.line(image, p3, p4, color, thickness)
-        cv2.line(image, p4, p1, color, thickness)
-        cv2.imshow("Bounding boxes", image)

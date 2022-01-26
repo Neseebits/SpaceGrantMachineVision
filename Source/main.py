@@ -106,7 +106,8 @@ def main():
             iterTimeStr = "Avg iteration: {} {}".format(getAvgTimeArr(iterationTimes, iterationCounter), "ms")
             cameraTimeStr = " => Avg frame: {} {}".format(getAvgTimeArr(cameraFrameTimes, iterationCounter), 'ms')
             featureTimeStr = ", Avg features: {} {}".format(getAvgTimeArr(featureFrameTimes, iterationCounter), 'ms')
-            objectDectTimeStr = ", Avg feature density: {} {}".format(getAvgTimeArr(featureDenseFrameTimes, iterationCounter), 'ms')
+            objectDectTimeStr = ", Avg feature density: {} {}".format(getAvgTimeArr(featureDenseFrameTimes,
+                                                                                    iterationCounter), 'ms')
             Logger.log(iterTimeStr + cameraTimeStr + featureTimeStr + objectDectTimeStr)
             iterationCounter = 0
             iterationTimes = []
