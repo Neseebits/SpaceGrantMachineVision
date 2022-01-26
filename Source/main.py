@@ -12,7 +12,7 @@ import numba
 # Custom imports
 from logger import Logger
 import exceptions
-from cameras import readAndShowCameras, getGrayscaleImages
+from cameras import readAndShowCameras, getGrayscaleImages, writeKandDistNPZ
 from visualOdometry.visualodometry import computeDisparity
 from features import computeMatchingPoints, getPointsFromKeypoints
 from objectDetection.objectDetection import findFeatureDenseBoundingBoxes
@@ -120,14 +120,16 @@ def main():
 # Function that will run some code one time before anything else
 # Primarily used for creating some files and/or testing some code
 def optional():
-    print("Running any optional code")
-    # lk = np.asarray([[10,0,320],[0,10,240],[0,0,1]])
-    # ld = np.asarray([[0],[0],[0],[0]])
-    # rk = lk
-    # rd = ld
-    # cameras.writeKandDistNPZ(lk, rk, ld, rd)
+    Logger.log("Running any optional code")
+    lk = np.asarray([[10,0,320],[0,10,240],[0,0,1]])
+    ld = np.asarray([[0],[0],[0],[0]])
+    rk = lk
+    rd = ld
+    writeKandDistNPZ(lk, rk, ld, rd)
 
-    print("Finished running any optional code")
+    
+
+    Logger.log("Finished running any optional code")
 
 
 def loadFiles():
@@ -144,13 +146,21 @@ def loadFiles():
 
 
 if __name__ == "__main__":
-    optional()
     Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
+    #optional()
     # Global constants for any hyperparameters for the code or physical constants
     # Define any global constants
     leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)  # cv2.CAP_DSHOW changes internal api stuff for opencv
     rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)  # add/remove cv2.CAP_DSHOW as needed for your system
-    # rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)
+
+    # Sets the exposure of the cameras. This process is finicky on what values are entered.
+    #leftCamera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)
+    #leftCamera.set(cv2.CAP_PROP_EXPOSURE, 100.0)
+    #Logger.log("Left exposure: " + str(leftCamera.get(cv2.CAP_PROP_EXPOSURE)))
+    #rightCamera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)
+    #rightCamera.set(cv2.CAP_PROP_EXPOSURE, 100.0)
+    #Logger.log("Right exposure: " + str(rightCamera.get(cv2.CAP_PROP_EXPOSURE)))
+
     errorTolerance = 2  # defines the amount of skipped/incomplete iterations before the loop is restarted
     iterationsToAverage = 9  # use n+1 to calculate true number averaged
 

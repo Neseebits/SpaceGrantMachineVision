@@ -91,7 +91,9 @@ def undistortImages(left, right, leftK, rightK, leftDistC, rightDistC):
 # K matrix is a 3x3 and dist coeffs is of length 4
 def writeKandDistNPZ(lk, rk, ld, rd):
     # Gets the path to the Calibration folder in data for any computer
-    calibrationPath = os.path.abspath(os.path.join(os.pardir)) + "\Data\Calibration\\"
+    calibrationPath = "Data/Calibration/"
+    if not os.path.isdir(calibrationPath):
+        calibrationPath = "../" + calibrationPath + "/"
     # saves the np.arrays inputed to their respective files
     np.save(calibrationPath + "leftK.npy", lk)
     np.save(calibrationPath + "rightK.npy", rk)

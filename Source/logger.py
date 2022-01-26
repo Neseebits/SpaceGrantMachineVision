@@ -1,12 +1,11 @@
 from datetime import datetime
 from time import sleep
-import threading
-from numba import jit
+from multiprocessing import Queue, Process
 
 class Logger:
     shouldThreadJoin = False
     
-    buffer = []
+    buffer = Queue()
     
     logToConsole = True
     logToFile = False
@@ -14,43 +13,38 @@ class Logger:
     
     @classmethod
     def setLogToConsole(cls, enable):
-        """DO NOT DIRECTLY CALL - Tells the Logger whether to print to the console
+        """ Tells the Logger whether to print to the console
 
         Args:
             enable (boolean): Whether to print to the console
         """
-        cls.logToConsole = enable
+        cls.buffer.put(("logToConsole", enable))
     
     @classmethod
     def openFile(cls, filepath):
-        """DO NOT DIRECTLY CALL - Confirms that the file can be opened and prints an opening message
+        """ Confirms that the file can be opened and prints an opening message
         
         Args:
             filepath (str): The file that the log should be written to
         """
-        cls.settingsLock.acquire()
-        
-        cls.logToFile = True
+
         if filepath == "":
-            cls.logToFile = False
+            cls.buffer.put(("logToFile", False))
             return
         
-        cls.bufferLock.acquire()
         try:
-            cls.filepath = filepath
             file = open(filepath, "a")
             file.write("\n\nStarting log at [" + datetime.now().strftime("%H:%M:%S") + "]\n")
             file.close()
+            cls.buffer.put(("filepath", filepath))
+            cls.buffer.put(("logToFile", True))
         except IOError:
             print("ERROR: unable to log to file at: " + filepath)
-            cls.logToFile = False
-        cls.bufferLock.release()
-        
-        cls.settingsLock.release()
+            cls.buffer.put(("logToFile", False))
     
     @classmethod
     def close(cls):
-        """DO NOT DIRECTLY CALL - If logger is open, output a closing message to the file
+        """ DO NOT DIRECTLY CALL - If logger is open, output a closing message to the file
         """
         if cls.logToFile:
             try:
@@ -62,24 +56,26 @@ class Logger:
     
     @classmethod
     def log(cls, message, toFile=True):
-        """Adds the message to the buffer, then the logger thread logs the provided string to the console and file if it is configured to
+        """ Adds the message to the buffer, then the logger thread logs the provided string to the console and/or file as configured
 
         Args:
             message (str): The message to be output to the console and/or file
         """
         # enables .log to handle Exception types directly
         if isinstance(message, Exception):
-            message = str(message)
-        cls.buffer.append(message)
+            cls.buffer.put(repr(message))
+        elif isinstance(message, str):
+            cls.buffer.put(message)
+        else:
+            cls.buffer.put("ERROR: Cannot log message of type " + str(type(message)))
     
     @classmethod
     def init(cls, filepath = ""):
-        """Start the logger thread, will log to file if specified
+        """ Start the logger thread, will log to file if specified
         """
-        cls.settingsLock = threading.Lock()
-        cls.bufferLock = threading.Lock()
-        cls.shouldThreadJoin = False
-        cls.logThread = threading.Thread(target=Logger.runLogThread, args=(filepath,))
+        cls.buffer.put(("shouldThreadJoin", False))
+        Logger.openFile(filepath)
+        cls.logThread = Process(target=Logger.runLogThread, args=(filepath,))
         cls.logThread.start()
         return
     
@@ -87,23 +83,18 @@ class Logger:
     def shutdown(cls):
         """Stops the logger thread
         """
-        cls.settingsLock.acquire()
-        cls.shouldThreadJoin = True
-        cls.settingsLock.release()
+        cls.buffer.put(("shouldThreadJoin", True))
         cls.logThread.join()
     
     @classmethod
     def runLogThread(cls, filepath = ""):
         """Function used by the logger thread
         """
-        Logger.openFile(filepath)
         while True:
-            cls.settingsLock.acquire()
-            cls.bufferLock.acquire()
-            if len(cls.buffer) != 0:
-                
-                for str in cls.buffer:
-                    finalMessage = "[" + datetime.now().strftime("%H:%M:%S") + "] " + str + "\n"
+            while not cls.buffer.empty():
+                val = cls.buffer.get()
+                if isinstance(val, str):
+                    finalMessage = "[" + datetime.now().strftime("%H:%M:%S") + "] " + val + "\n"
                     if cls.logToConsole:
                         print(finalMessage, end="")
                     if cls.logToFile:# and toFile:
@@ -113,13 +104,30 @@ class Logger:
                             file.close()
                         except IOError:
                             return
-                        
-                cls.buffer = []
-            cls.bufferLock.release()
+                elif isinstance(val, tuple):
+                    try:
+                        logSetting = True
+                        if val[0] == "logToConsole":
+                            cls.logToConsole = val[1]
+                        elif val[0] == "logToFile":
+                            cls.logToFile = val[1]
+                        elif val[0] == "filepath":
+                            cls.filepath = val[1]
+                        elif val[0] == "shouldThreadJoin":
+                            cls.shouldThreadJoin = val[1]
+                            logSetting = False
+                        else:
+                            cls.buffer.put("Unknown setting <" + val[0] + "> with value <" + str(val[1]))
+                            logSetting = False
+                        if logSetting:
+                            cls.buffer.put("Logger setting <" + val[0] + "> is now <" + str(val[1]) + ">")
+                    except:
+                        cls.buffer.put("Unknown setting <" + str(val[0]) + "> with value <" + str(val[1]))
+                else:
+                    cls.buffer.put("Invalid logger command of type", type(val))
             
             if cls.shouldThreadJoin:
                 break
-            cls.settingsLock.release()
             
             sleep(0.1)
         
