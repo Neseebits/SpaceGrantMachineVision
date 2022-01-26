@@ -73,9 +73,10 @@ class Logger:
     def init(cls, filepath = ""):
         """ Start the logger thread, will log to file if specified
         """
+        cls.buffer = Queue()
         cls.buffer.put(("shouldThreadJoin", False))
         Logger.openFile(filepath)
-        cls.logThread = Process(target=Logger.runLogThread, args=(filepath,))
+        cls.logThread = Process(target=Logger.runLogThread, args=(cls.buffer, filepath,))
         cls.logThread.start()
         return
     
@@ -87,9 +88,10 @@ class Logger:
         cls.logThread.join()
     
     @classmethod
-    def runLogThread(cls, filepath = ""):
+    def runLogThread(cls, buffer, filepath = ""):
         """Function used by the logger thread
         """
+        cls.buffer = buffer
         while True:
             while not cls.buffer.empty():
                 val = cls.buffer.get()
