@@ -13,7 +13,7 @@ class Logger:
     
     @classmethod
     def setLogToConsole(cls, enable):
-        """Tells the Logger whether to print to the console
+        """ Tells the Logger whether to print to the console
 
         Args:
             enable (boolean): Whether to print to the console
@@ -22,7 +22,7 @@ class Logger:
     
     @classmethod
     def openFile(cls, filepath):
-        """DO NOT DIRECTLY CALL - Confirms that the file can be opened and prints an opening message
+        """ Confirms that the file can be opened and prints an opening message
         
         Args:
             filepath (str): The file that the log should be written to
@@ -44,7 +44,7 @@ class Logger:
     
     @classmethod
     def close(cls):
-        """DO NOT DIRECTLY CALL - If logger is open, output a closing message to the file
+        """ DO NOT DIRECTLY CALL - If logger is open, output a closing message to the file
         """
         if cls.logToFile:
             try:
@@ -56,7 +56,7 @@ class Logger:
     
     @classmethod
     def log(cls, message, toFile=True):
-        """Adds the message to the buffer, then the logger thread logs the provided string to the console and file if it is configured to
+        """ Adds the message to the buffer, then the logger thread logs the provided string to the console and/or file as configured
 
         Args:
             message (str): The message to be output to the console and/or file
@@ -64,13 +64,17 @@ class Logger:
         # enables .log to handle Exception types directly
         if isinstance(message, Exception):
             message = str(message)
-        cls.buffer.put(message)
+        elif isinstance(message, str):
+            cls.buffer.put(message)
+        else:
+            cls.buffer.put("ERROR: Cannot log message of type " + str(type(message)))
     
     @classmethod
     def init(cls, filepath = ""):
-        """Start the logger thread, will log to file if specified
+        """ Start the logger thread, will log to file if specified
         """
         cls.buffer.put(("shouldThreadJoin", False))
+        Logger.openFile(filepath)
         cls.logThread = Process(target=Logger.runLogThread, args=(filepath,))
         cls.logThread.start()
         return
@@ -86,7 +90,6 @@ class Logger:
     def runLogThread(cls, filepath = ""):
         """Function used by the logger thread
         """
-        Logger.openFile(filepath)
         while True:
             while not cls.buffer.empty():
                 val = cls.buffer.get()
@@ -102,14 +105,24 @@ class Logger:
                         except IOError:
                             return
                 elif isinstance(val, tuple):
-                    if val[0] == "logToConsole":
-                        cls.logToConsole = val[1]
-                    elif val[0] == "logToFile":
-                        cls.logToFile = val[1]
-                    elif val[0] == "filepath":
-                        cls.filepath = val[1]
-                    elif val[0] == "shouldThreadJoin":
-                        cls.shouldThreadJoin = val[1]
+                    try:
+                        logSetting = True
+                        if val[0] == "logToConsole":
+                            cls.logToConsole = val[1]
+                        elif val[0] == "logToFile":
+                            cls.logToFile = val[1]
+                        elif val[0] == "filepath":
+                            cls.filepath = val[1]
+                        elif val[0] == "shouldThreadJoin":
+                            cls.shouldThreadJoin = val[1]
+                            logSetting = False
+                        else:
+                            cls.buffer.put("Unknown setting <" + val[0] + "> with value <" + str(val[1]))
+                            logSetting = False
+                        if logSetting:
+                            cls.buffer.put("Logger setting <" + val[0] + "> is now <" + str(val[1]) + ">")
+                    except:
+                        cls.buffer.put("Unknown setting <" + str(val[0]) + "> with value <" + str(val[1]))
                 else:
                     cls.buffer.put("Invalid logger command of type", type(val))
             
