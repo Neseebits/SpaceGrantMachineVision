@@ -140,8 +140,8 @@ if __name__ == "__main__":
     stereo = cv2.StereoSGBM_create()  # stereo object
 
     # loading data for cameras and starting the camera process
-    leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)  # cv2.CAP_DSHOW changes internal api stuff for opencv
-    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)  # add/remove cv2.CAP_DSHOW as needed for your system
+    leftCamera = cv2.CAP_DSHOW + 0  # cv2.CAP_DSHOW changes internal api stuff for opencv
+    rightCamera = cv2.CAP_DSHOW + 1  # add/remove cv2.CAP_DSHOW as needed for your system
     # Sets the exposure of the cameras. This process is finicky on what values are entered.
     # leftCamera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)
     # leftCamera.set(cv2.CAP_PROP_EXPOSURE, 100.0)

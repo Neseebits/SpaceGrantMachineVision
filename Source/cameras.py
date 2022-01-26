@@ -10,6 +10,7 @@ import cv2
 from numba import jit
 
 # Custom  imports
+from logger import Logger
 import exceptions
 
 
@@ -99,11 +100,18 @@ def readAndWriteCameras(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC,
     writeCameraImages(cameraPath, undistortedLeft, undistortedRight)
 
 def cameraProcess(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC):
+    leftCamera = cv2.VideoCapture(leftCam)
+    rightCamera = cv2.VideoCapture(rightCam)
     while True:
-        readAndWriteCameras(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC)
+        try:
+            readAndWriteCameras(cameraPath, leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC)
+        except exceptions.CameraReadError as e:
+            Logger.log(e)
+        except:
+            Logger.log("Uncaught exception in readAndWriteCameras")
 
 def initCameras(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC):
-    p = Process(target=cameraProcess, args=(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC))
+    p = Process(target=cameraProcess, args=(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, ))
     p.start()
 
 # loads all files from data that the robot needs
