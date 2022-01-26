@@ -63,7 +63,7 @@ class Logger:
         """
         # enables .log to handle Exception types directly
         if isinstance(message, Exception):
-            message = str(message)
+            cls.buffer.put(repr(message))
         elif isinstance(message, str):
             cls.buffer.put(message)
         else:
