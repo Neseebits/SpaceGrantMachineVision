@@ -12,7 +12,7 @@ import numba
 # Custom imports
 from logger import Logger
 import exceptions
-from cameras import readAndShowCameras, getGrayscaleImages, writeKandDistNPZ
+from cameras import writeKandDistNPZ, initCameras, fetchAndShowCameras, loadUndistortionFiles
 from visualOdometry.visualodometry import computeDisparity
 from features import computeMatchingPoints, getPointsFromKeypoints
 from objectDetection.objectDetection import findFeatureDenseBoundingBoxes
@@ -49,10 +49,7 @@ def main():
 
             cameraStartTime = time.time()
             # Satisfies that read images stage of control flow
-            leftImage, rightImage = readAndShowCameras(leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC,
-                                                       show=True)
-            # grayscale images for feature detection
-            grayLeftImage, grayRightImage = getGrayscaleImages(leftImage, rightImage)
+            leftImage, rightImage, grayLeftImage, grayRightImage = fetchAndShowCameras(cameraPath, show=True)
             cameraFrameTimes.append(time.time() - cameraStartTime)
 
             featureStartTime = time.time()
@@ -127,40 +124,13 @@ def optional():
     rd = ld
     writeKandDistNPZ(lk, rk, ld, rd)
 
-    
-
     Logger.log("Finished running any optional code")
-
-
-def loadFiles():
-    # one time file loading for the camera intrinsic matrices and undistortion coeff
-    calibrationPath = "Data/Calibration/"
-    if not os.path.isdir(calibrationPath):
-        calibrationPath = "../" + calibrationPath
-    leftK = np.load(calibrationPath + "leftK.npy")
-    rightK = np.load(calibrationPath + "rightK.npy")
-    leftDistC = np.load(calibrationPath + "leftDistC.npy")
-    rightDistC = np.load(calibrationPath + "rightDistC.npy")
-
-    return leftK, rightK, leftDistC, rightDistC
-
 
 if __name__ == "__main__":
     Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
     #optional()
     # Global constants for any hyperparameters for the code or physical constants
     # Define any global constants
-    leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)  # cv2.CAP_DSHOW changes internal api stuff for opencv
-    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)  # add/remove cv2.CAP_DSHOW as needed for your system
-
-    # Sets the exposure of the cameras. This process is finicky on what values are entered.
-    #leftCamera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)
-    #leftCamera.set(cv2.CAP_PROP_EXPOSURE, 100.0)
-    #Logger.log("Left exposure: " + str(leftCamera.get(cv2.CAP_PROP_EXPOSURE)))
-    #rightCamera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)
-    #rightCamera.set(cv2.CAP_PROP_EXPOSURE, 100.0)
-    #Logger.log("Right exposure: " + str(rightCamera.get(cv2.CAP_PROP_EXPOSURE)))
-
     errorTolerance = 2  # defines the amount of skipped/incomplete iterations before the loop is restarted
     iterationsToAverage = 9  # use n+1 to calculate true number averaged
 
@@ -169,7 +139,21 @@ if __name__ == "__main__":
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)  # matcher object
     stereo = cv2.StereoSGBM_create()  # stereo object
 
-    leftK, rightK, leftDistC, rightDistC = loadFiles()
+    # loading data for cameras and starting the camera process
+    leftCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 0)  # cv2.CAP_DSHOW changes internal api stuff for opencv
+    rightCamera = cv2.VideoCapture(cv2.CAP_DSHOW + 1)  # add/remove cv2.CAP_DSHOW as needed for your system
+    # Sets the exposure of the cameras. This process is finicky on what values are entered.
+    # leftCamera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)
+    # leftCamera.set(cv2.CAP_PROP_EXPOSURE, 100.0)
+    # Logger.log("Left exposure: " + str(leftCamera.get(cv2.CAP_PROP_EXPOSURE)))
+    # rightCamera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)
+    # rightCamera.set(cv2.CAP_PROP_EXPOSURE, 100.0)
+    # Logger.log("Right exposure: " + str(rightCamera.get(cv2.CAP_PROP_EXPOSURE)))
+    cameraPath = "Data/Cameras/"
+    if not os.path.isdir(cameraPath):
+        cameraPath = "../" + cameraPath + "/"
+    leftK, rightK, leftDistC, rightDistC = loadUndistortionFiles()
+    initCameras(cameraPath, leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC)
 
     Logger.log("SYSTEM INFORMATION:")
     # TODO
