@@ -2,7 +2,7 @@
 import os
 import sys
 import time
-from multiprocessing import Process
+from multiprocessing import Process, Lock
 
 # Additional libs
 import numpy as np
@@ -32,9 +32,11 @@ def showCameras(left, right):
     else:
         cv2.imshow("Combined camera output", np.concatenate((left, right), axis=1))
 
-def fetchAndShowCameras(cameraPath, show=True):
+def fetchAndShowCameras(cameraPath, cameraLock, show=True):
     try:
+        cameraLock.acquire()
         left, right = fetchCameraImages(cameraPath)
+        cameraLock.release()
         grayLeft, grayRight = getGrayscaleImages(left, right)
         if show:
             showCameras(left, right)
@@ -94,24 +96,26 @@ def undistortImages(left, right, leftK, rightK, leftDistC, rightDistC):
     except:
         raise exceptions.UndistortImageError("undistortImages function error")
 
-def readAndWriteCameras(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC):
+def readAndWriteCameras(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock):
     leftImg, rightImg = readCameras(leftCam, rightCam)
     undistortedLeft, undistortedRight = undistortImages(leftImg, rightImg, leftK, rightK, leftDistC, rightDistC)
+    cameraLock.acquire()
     writeCameraImages(cameraPath, undistortedLeft, undistortedRight)
+    cameraLock.release()
 
-def cameraProcess(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC):
+def cameraProcess(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock):
     leftCamera = cv2.VideoCapture(leftCam)
     rightCamera = cv2.VideoCapture(rightCam)
     while True:
         try:
-            readAndWriteCameras(cameraPath, leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC)
+            readAndWriteCameras(cameraPath, leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC, cameraLock)
         except exceptions.CameraReadError as e:
             Logger.log(e)
         except:
             Logger.log("Uncaught exception in readAndWriteCameras")
 
-def initCameras(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC):
-    p = Process(target=cameraProcess, args=(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, ))
+def initCameras(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock):
+    p = Process(target=cameraProcess, args=(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock, ))
     p.start()
 
 # loads all files from data that the robot needs

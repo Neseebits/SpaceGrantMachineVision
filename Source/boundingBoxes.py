@@ -32,8 +32,5 @@ def drawBoundingBoxes(rawImage, boundingBoxes, color=(0,0,255), thickness=2, win
     image = np.copy(rawImage)
     for box in boundingBoxes:
         p1, p2, p3, p4 = getBoundingBoxPoints(box)
-        cv2.line(image, p1, p2, color, thickness)
-        cv2.line(image, p2, p3, color, thickness)
-        cv2.line(image, p3, p4, color, thickness)
-        cv2.line(image, p4, p1, color, thickness)
+        cv2.rectangle(image, p1, p3, color, thickness)
         cv2.imshow(windowName, image)

@@ -8,6 +8,7 @@ import pathlib
 import numpy as np
 import cv2
 import numba
+from multiprocessing import Lock
 
 # Custom imports
 from logger import Logger
@@ -16,15 +17,12 @@ from cameras import writeKandDistNPZ, initCameras, fetchAndShowCameras, loadUndi
 from visualOdometry.visualodometry import computeDisparity
 from features import computeMatchingPoints, getPointsFromKeypoints
 from objectDetection.objectDetection import findFeatureDenseBoundingBoxes
-
-# takes an array of times and returns the average over a size
-def getAvgTimeArr(arr, size):
-    return round((sum(arr) / size) * 1000, 1)
+from utility import getAvgTimeArr
 
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration
 def main():
-    firstIteration = True
+    numTotalIterations = 0
     consecutiveErrors = 0
     iterationCounter = 0
     iterationTimes = []
@@ -49,7 +47,7 @@ def main():
 
             cameraStartTime = time.time()
             # Satisfies that read images stage of control flow
-            leftImage, rightImage, grayLeftImage, grayRightImage = fetchAndShowCameras(cameraPath, show=True)
+            leftImage, rightImage, grayLeftImage, grayRightImage = fetchAndShowCameras(cameraPath, cameraLock, show=True)
             cameraFrameTimes.append(time.time() - cameraStartTime)
 
             featureStartTime = time.time()
@@ -63,13 +61,13 @@ def main():
             featureDenseStartTime = time.time()
             # acquires the bounding box cordinates for areas of the image where there are dense features
             featureDenseBoundingBoxes = findFeatureDenseBoundingBoxes(leftImage, getPointsFromKeypoints(leftKp),
-                                                                      binSize=30.0, featuresPerPixel=0.01, show=True)
+                                                                      binSize=30.0, featuresPerPixel=0.04, show=True)
             featureDenseFrameTimes.append(time.time() - featureDenseStartTime)
 
             # all additional functionality should be present within the === comments
             # additional data that needs to be stored for each iteration should be handled above
             #===========================================================================================================
-            if not firstIteration:
+            if numTotalIterations > 1:
 
                 # this disparity map calculation should maybe get removed since we ??only?? care about the depth values
                 disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=True)
@@ -100,18 +98,19 @@ def main():
             iterationTimes.append(time.time() - iterationStartTime)
             iterationCounter += 1
         else:
+            iterNum = "#{} Total Iterations: ".format(numTotalIterations + 1)
             iterTimeStr = "Avg iteration: {} {}".format(getAvgTimeArr(iterationTimes, iterationCounter), "ms")
             cameraTimeStr = " => Avg frame: {} {}".format(getAvgTimeArr(cameraFrameTimes, iterationCounter), 'ms')
             featureTimeStr = ", Avg features: {} {}".format(getAvgTimeArr(featureFrameTimes, iterationCounter), 'ms')
             objectDectTimeStr = ", Avg feature density: {} {}".format(getAvgTimeArr(featureDenseFrameTimes,
                                                                                     iterationCounter), 'ms')
-            Logger.log(iterTimeStr + cameraTimeStr + featureTimeStr + objectDectTimeStr)
+            Logger.log(iterNum + iterTimeStr + cameraTimeStr + featureTimeStr + objectDectTimeStr)
             iterationCounter = 0
             iterationTimes = []
             cameraFrameTimes = []
             featureFrameTimes = []
             featureDenseFrameTimes = []
-        firstIteration = False
+        numTotalIterations += 1
 
 
 # Function that will run some code one time before anything else
@@ -153,7 +152,8 @@ if __name__ == "__main__":
     if not os.path.isdir(cameraPath):
         cameraPath = "../" + cameraPath + "/"
     leftK, rightK, leftDistC, rightDistC = loadUndistortionFiles()
-    initCameras(cameraPath, leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC)
+    cameraLock = Lock()
+    initCameras(cameraPath, leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC, cameraLock)
 
     Logger.log("SYSTEM INFORMATION:")
     # TODO
