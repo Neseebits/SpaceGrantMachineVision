@@ -10,7 +10,7 @@ import cv2
 from numba import jit, njit
 
 # Custom  imports
-import logger
+from logger import Logger
 import exceptions
 
 
@@ -28,9 +28,11 @@ def getBoundingBoxPoints(box):
 #        [ [x1, y1], [x2, y2] ]
 #        where x1, y1, x2, y2 are any number
 # the number type gets sanitized upon boundingBox load coordinates
-def drawBoundingBoxes(rawImage, boundingBoxes, color=(0,0,255), thickness=2, windowName="Bounding Boxes"):
+def drawBoundingBoxes(rawImage, boundingBoxes, color=(0,0,255), thickness=2, windowName="Bounding Boxes", show=False):
     image = np.copy(rawImage)
     for box in boundingBoxes:
         p1, p2, p3, p4 = getBoundingBoxPoints(box)
         cv2.rectangle(image, p1, p3, color, thickness)
+    if show:
         cv2.imshow(windowName, image)
+    return image
