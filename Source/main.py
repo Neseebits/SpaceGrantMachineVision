@@ -7,7 +7,7 @@ import pathlib
 # Additional libs
 import numpy as np
 import cv2
-import numba
+from numba import jit
 from multiprocessing import Lock
 
 # Custom imports
@@ -16,7 +16,7 @@ import exceptions
 from cameras import writeKandDistNPZ, initCameras, fetchAndShowCameras, loadUndistortionFiles
 from visualOdometry.visualodometry import computeDisparity
 from features import computeMatchingPoints, getPointsFromKeypoints
-from objectDetection.objectDetection import findFeatureDenseBoundingBoxes
+from objectDetection.featureDensity import findFeatureDenseBoundingBoxes
 from utility import getAvgTimeArr
 
 # Primary function where our main control flow will happen

@@ -14,7 +14,7 @@ from logger import Logger
 import exceptions
 import utility
 from features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
-from boundingBoxesimport drawBoundingBoxes
+from boundingBoxes import drawBoundingBoxes
 from featureDensity import findFeatureDenseBoundingBoxes
 
 
