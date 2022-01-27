@@ -24,6 +24,8 @@ def getAvgTimeArr(arr, size):
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration
 def main():
+    HEADLESS = False
+
     firstIteration = True
     consecutiveErrors = 0
     iterationCounter = 0
@@ -50,7 +52,7 @@ def main():
             cameraStartTime = time.time()
             # Satisfies that read images stage of control flow
             leftImage, rightImage = readAndShowCameras(leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC,
-                                                       show=True)
+                                                       show=not HEADLESS)
             # grayscale images for feature detection
             grayLeftImage, grayRightImage = getGrayscaleImages(leftImage, rightImage)
             cameraFrameTimes.append(time.time() - cameraStartTime)
@@ -60,13 +62,13 @@ def main():
             # the point at index [0], [1], [2], etc. in both is the same real life feature,
             leftPts, rightPts, leftKp, leftDesc, rightKp, rightDesc = computeMatchingPoints(grayLeftImage,
                                                                                             grayRightImage, orb,
-                                                                                            matcher, show=True)
+                                                                                            matcher, show=not HEADLESS)
             featureFrameTimes.append(time.time() - featureStartTime)
 
             featureDenseStartTime = time.time()
             # acquires the bounding box cordinates for areas of the image where there are dense features
             featureDenseBoundingBoxes = findFeatureDenseBoundingBoxes(leftImage, getPointsFromKeypoints(leftKp),
-                                                                      binSize=30.0, featuresPerPixel=0.01, show=True)
+                                                                      binSize=30.0, featuresPerPixel=0.01, show=not HEADLESS)
             featureDenseFrameTimes.append(time.time() - featureDenseStartTime)
 
             # all additional functionality should be present within the === comments
@@ -75,7 +77,7 @@ def main():
             if not firstIteration:
 
                 # this disparity map calculation should maybe get removed since we ??only?? care about the depth values
-                disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=True)
+                disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=not HEADLESS)
 
                 # TODO
                 # Fill in remainder of functionality
