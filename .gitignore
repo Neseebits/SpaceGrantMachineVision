@@ -1,6 +1,6 @@
 # ignore camera cache files
-left_image.jpg
-right_image.jpg
+/left_image.JPG
+/right_image.JPG
 
 # ignore log file
 .log
