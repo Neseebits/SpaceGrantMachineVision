@@ -170,8 +170,6 @@ if __name__ == "__main__":
             Logger.log("Program shutdown...")
             break
 
-    leftCamera.release()
-    rightCamera.release()
     cv2.destroyAllWindows()
     Logger.shutdown()  # Shuts down the logging system and prints a closing message to the file
     sys.exit(0)

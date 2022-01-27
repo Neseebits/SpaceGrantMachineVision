@@ -14,8 +14,11 @@ from logger import Logger
 import exceptions
 
 
-def fetchCameraImages(cameraPath):
-    return cv2.imread(cameraPath + "left_image.jpg"), cv2.imread(cameraPath + "right_image.jpg")
+def fetchCameraImages(cameraPath, cameraLock):
+    cameraLock.acquire()
+    left, right = cv2.imread(cameraPath + "left_image.jpg"), cv2.imread(cameraPath + "right_image.jpg")
+    cameraLock.release()
+    return left, right
 
 # Function makes a window which displays both camera feeds next to each other
 # Takes the images as two arguments: left, right images
@@ -34,9 +37,7 @@ def showCameras(left, right):
 
 def fetchAndShowCameras(cameraPath, cameraLock, show=True):
     try:
-        cameraLock.acquire()
-        left, right = fetchCameraImages(cameraPath)
-        cameraLock.release()
+        left, right = fetchCameraImages(cameraPath, cameraLock)
         grayLeft, grayRight = getGrayscaleImages(left, right)
         if show:
             showCameras(left, right)
@@ -78,9 +79,11 @@ def readAndShowCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, 
     except Exception as e:
         raise e
 
-def writeCameraImages(cameraPath, leftImage, rightImage):
+def writeCameraImages(cameraPath, leftImage, rightImage, cameraLock):
+    cameraLock.acquire()
     cv2.imwrite(cameraPath + "left_image.jpg", leftImage)
     cv2.imwrite(cameraPath + "right_image.jpg", rightImage)
+    cameraLock.release()
 
 # Function for undistorting the read in images
 # Utilizes pre-saved camera coefficient matrices and dist coeff arrays
@@ -99,9 +102,7 @@ def undistortImages(left, right, leftK, rightK, leftDistC, rightDistC):
 def readAndWriteCameras(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock):
     leftImg, rightImg = readCameras(leftCam, rightCam)
     undistortedLeft, undistortedRight = undistortImages(leftImg, rightImg, leftK, rightK, leftDistC, rightDistC)
-    cameraLock.acquire()
-    writeCameraImages(cameraPath, undistortedLeft, undistortedRight)
-    cameraLock.release()
+    writeCameraImages(cameraPath, undistortedLeft, undistortedRight, cameraLock)
 
 def cameraProcess(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock):
     leftCamera = cv2.VideoCapture(leftCam)
@@ -115,7 +116,7 @@ def cameraProcess(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, right
             Logger.log("Uncaught exception in readAndWriteCameras")
 
 def initCameras(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock):
-    p = Process(target=cameraProcess, args=(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock, ))
+    p = Process(target=cameraProcess, args=(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock, ), daemon=True)
     p.start()
 
 # loads all files from data that the robot needs
