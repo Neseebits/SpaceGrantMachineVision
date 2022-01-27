@@ -1,3 +1,7 @@
+# ignore camera cache files
+left_image.jpg
+right_image.jpg
+
 # ignore log file
 .log
 
