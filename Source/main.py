@@ -24,7 +24,6 @@ from utility import getAvgTimeArr
 def main():
     HEADLESS = False
 
-    firstIteration = True
     numTotalIterations = 0
     consecutiveErrors = 0
     iterationCounter = 0

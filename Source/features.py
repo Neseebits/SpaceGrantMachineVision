@@ -87,4 +87,4 @@ def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=10
     except: # generic exception catcher, just return no list of points
         Logger.log("Generating an exception inside of computeMatchingPoints")
         # Logger.log(e)
-        return None, None, None, None, None, None
+        return list(), list(), list(), list(), list(), list()
