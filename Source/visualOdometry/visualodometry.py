@@ -9,7 +9,7 @@ import cv2
 from numba import jit
 
 # Custom  imports
-from Source import exceptions
+import exceptions
 
 # compute the disparity map of the two grayscale images given
 # takes a stereo matcher object and two grayscale images

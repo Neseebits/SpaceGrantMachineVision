@@ -15,6 +15,10 @@ from logger import Logger
 def getHeightWidth(img):
     return img.shape[0], img.shape[1]
 
+# takes an array of times and returns the average over a size
+def getAvgTimeArr(arr, size):
+    return round((sum(arr) / size) * 1000, 1)
+
 # UNTESTED
 # read all images in given folder, if recurse is true will also get all images in sub_folders of the given folder
 # prints an error if cv2.imread() throws an exception

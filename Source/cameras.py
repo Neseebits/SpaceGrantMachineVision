@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+from multiprocessing import Process, Lock
 
 # Additional libs
 import numpy as np
@@ -9,34 +10,15 @@ import cv2
 from numba import jit
 
 # Custom  imports
+from logger import Logger
 import exceptions
 
 
-# Function to get the new frames from both cameras
-# "Safe" such that it will throw an exception if the cameras do not yield frames
-# Takes both cameras as left and right
-# Returns both image in leftImage, rightImage
-# Left image in return tuple corresponds to left camera number in return tuple
-@jit(forceobj=True)  # forceobj is used here since the opencv videoCaptures cannot be compiled
-def readCameras(left, right):
-    # Got image boolean and retrieved image
-    gotLeft, gotRight = left.grab(), right.grab()
-    # Ensure images were received
-    if not gotLeft:
-        raise exceptions.CameraReadError("Left")
-    if not gotRight:
-        raise exceptions.CameraReadError("Right")
-    # Return images
-    return left.retrieve()[1], right.retrieve()[1]
-
-# makes grayscale images of the bgr_images returned by readCameras
-@jit(forceobj=True)
-def getGrayscaleImages(left, right):
-    return cv2.cvtColor(left, cv2.COLOR_BGR2GRAY), cv2.cvtColor(right, cv2.COLOR_BGR2GRAY)
-
-# TODO
-# np.concatenate is a slow operation on the CPU
-# using numba it is possible to put on the GPU, @cuda.jit('void(int8[:,:,:], int8[:,:,:])')
+def fetchCameraImages(cameraPath, cameraLock):
+    cameraLock.acquire()
+    left, right = cv2.imread(cameraPath + "left_image.jpg"), cv2.imread(cameraPath + "right_image.jpg")
+    cameraLock.release()
+    return left, right
 
 # Function makes a window which displays both camera feeds next to each other
 # Takes the images as two arguments: left, right images
@@ -53,10 +35,37 @@ def showCameras(left, right):
     else:
         cv2.imshow("Combined camera output", np.concatenate((left, right), axis=1))
 
+def fetchAndShowCameras(cameraPath, cameraLock, show=True):
+    try:
+        left, right = fetchCameraImages(cameraPath, cameraLock)
+        grayLeft, grayRight = getGrayscaleImages(left, right)
+        if show:
+            showCameras(left, right)
+        return left, right, grayLeft, grayRight
+    except Exception as e:
+        raise e
 
-# TODO
-# Figure out how to get numba to compile an except statement
-# numba can only do a basic try:, except:, need to figure out how to pass on errors with numba compilation
+# Function to get the new frames from both cameras
+# "Safe" such that it will throw an exception if the cameras do not yield frames
+# Takes both cameras as left and right
+# Returns both image in leftImage, rightImage
+# Left image in return tuple corresponds to left camera number in return tuple
+# @jit(forceobj=True)  # forceobj is used here since the opencv videoCaptures cannot be compiled
+def readCameras(left, right):
+    # Got image boolean and retrieved image
+    gotLeft, gotRight = left.grab(), right.grab()
+    # Ensure images were received
+    if not gotLeft:
+        raise exceptions.CameraReadError("Left")
+    if not gotRight:
+        raise exceptions.CameraReadError("Right")
+    # Return images
+    return left.retrieve()[1], right.retrieve()[1]
+
+# makes grayscale images of the bgr_images returned by readCameras
+# @jit(forceobj=True)
+def getGrayscaleImages(left, right):
+    return cv2.cvtColor(left, cv2.COLOR_BGR2GRAY), cv2.cvtColor(right, cv2.COLOR_BGR2GRAY)
 
 # Convenience function which will read and show the images given by readCameras and showCameras
 # Will pass on exceptions
@@ -70,8 +79,11 @@ def readAndShowCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, 
     except Exception as e:
         raise e
 
-# TODO
-# Look into numba or JIT compilations for undistort
+def writeCameraImages(cameraPath, leftImage, rightImage, cameraLock):
+    cameraLock.acquire()
+    cv2.imwrite(cameraPath + "left_image.jpg", leftImage)
+    cv2.imwrite(cameraPath + "right_image.jpg", rightImage)
+    cameraLock.release()
 
 # Function for undistorting the read in images
 # Utilizes pre-saved camera coefficient matrices and dist coeff arrays
@@ -87,13 +99,49 @@ def undistortImages(left, right, leftK, rightK, leftDistC, rightDistC):
     except:
         raise exceptions.UndistortImageError("undistortImages function error")
 
+def readAndWriteCameras(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock):
+    leftImg, rightImg = readCameras(leftCam, rightCam)
+    undistortedLeft, undistortedRight = undistortImages(leftImg, rightImg, leftK, rightK, leftDistC, rightDistC)
+    writeCameraImages(cameraPath, undistortedLeft, undistortedRight, cameraLock)
+
+def cameraProcess(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock):
+    leftCamera = cv2.VideoCapture(leftCam)
+    rightCamera = cv2.VideoCapture(rightCam)
+    while True:
+        try:
+            readAndWriteCameras(cameraPath, leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC, cameraLock)
+        except exceptions.CameraReadError as e:
+            Logger.log(e)
+        except:
+            Logger.log("Uncaught exception in readAndWriteCameras")
+
+def initCameras(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock):
+    p = Process(target=cameraProcess, args=(cameraPath, leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, cameraLock, ), daemon=True)
+    p.start()
+
+# loads all files from data that the robot needs
+def loadUndistortionFiles():
+    # one time file loading for the camera intrinsic matrices and undistortion coeff
+    calibrationPath = "Data/Calibration/"
+    if not os.path.isdir(calibrationPath):
+        calibrationPath = "../" + calibrationPath
+    leftK = np.load(calibrationPath + "leftK.npy")
+    rightK = np.load(calibrationPath + "rightK.npy")
+    leftDistC = np.load(calibrationPath + "leftDistC.npy")
+    rightDistC = np.load(calibrationPath + "rightDistC.npy")
+
+    return leftK, rightK, leftDistC, rightDistC
+
 # Function to write K matrix and dist coeffs to npz files
 # K matrix is a 3x3 and dist coeffs is of length 4
 def writeKandDistNPZ(lk, rk, ld, rd):
     # Gets the path to the Calibration folder in data for any computer
-    calibrationPath = os.path.abspath(os.path.join(os.pardir)) + "\Data\Calibration\\"
+    calibrationPath = "Data/Calibration/"
+    if not os.path.isdir(calibrationPath):
+        calibrationPath = "../" + calibrationPath + "/"
     # saves the np.arrays inputed to their respective files
     np.save(calibrationPath + "leftK.npy", lk)
     np.save(calibrationPath + "rightK.npy", rk)
     np.save(calibrationPath + "leftDistC.npy", ld)
     np.save(calibrationPath + "rightDistC.npy", rd)
+
