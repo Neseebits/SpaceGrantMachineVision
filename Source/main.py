@@ -49,7 +49,7 @@ def main():
 
             cameraStartTime = time.time()
             # Satisfies that read images stage of control flow
-            leftImage, rightImage, grayLeftImage, grayRightImage = fetchAndShowCameras(cameraPath, cameraLock, show=not HEADLESS)
+            leftImage, rightImage, grayLeftImage, grayRightImage = fetchAndShowCameras(cameraPath, cameraLocks, show=not HEADLESS)
             cameraFrameTimes.append(time.time() - cameraStartTime)
 
             featureStartTime = time.time()
@@ -154,8 +154,8 @@ if __name__ == "__main__":
     if not os.path.isdir(cameraPath):
         cameraPath = "../" + cameraPath + "/"
     leftK, rightK, leftDistC, rightDistC = loadUndistortionFiles()
-    cameraLock = Lock()
-    initCameras(cameraPath, leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC, cameraLock)
+    cameraLocks = [Lock(), Lock()]
+    initCameras(cameraPath, leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC, cameraLocks)
 
     Logger.log("SYSTEM INFORMATION:")
     # TODO
