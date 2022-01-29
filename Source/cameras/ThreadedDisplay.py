@@ -1,8 +1,7 @@
 from threading import Thread
 import cv2
 
-# https://github.com/nrsyed/computer-vision/blob/master/multithread/VideoShow.py
-class VideoShow:
+class threadedDisplay:
     """
     Class that continuously shows a frame using a dedicated thread.
     """
