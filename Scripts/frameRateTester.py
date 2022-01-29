@@ -34,6 +34,8 @@ if __name__ == '__main__' :
         # Grab a few frames
         for i in range(0, num_frames) :
             ret, frame = vid.read()
+            cv2.imshow("camera", frame)
+            cv2.waitKey(1)
 
         # End time
         end = time.time()
