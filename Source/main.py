@@ -2,18 +2,15 @@
 import os
 import sys
 import time
-import pathlib
 
 # Additional libs
 import numpy as np
 import cv2
-from numba import jit
-from multiprocessing import Lock
 
 # Custom imports
 from logger import Logger
 import exceptions
-from cameras import writeKandDistNPZ, initCameras, fetchAndShowCameras, loadUndistortionFiles
+from cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras
 from visualOdometry.visualodometry import computeDisparity
 from features import computeMatchingPoints, getPointsFromKeypoints
 from objectDetection.featureDensity import findFeatureDenseBoundingBoxes
@@ -49,7 +46,7 @@ def main():
 
             cameraStartTime = time.time()
             # Satisfies that read images stage of control flow
-            leftImage, rightImage, grayLeftImage, grayRightImage = fetchAndShowCameras(cameraPath, cameraLocks, show=not HEADLESS)
+            leftImage, rightImage, grayLeftImage, grayRightImage = fetchAndShowCameras(leftCam, rightCam, show=not HEADLESS)
             cameraFrameTimes.append(time.time() - cameraStartTime)
 
             featureStartTime = time.time()
@@ -141,21 +138,10 @@ if __name__ == "__main__":
     stereo = cv2.StereoSGBM_create()  # stereo object
 
     # loading data for cameras and starting the camera process
-    leftCamera = cv2.CAP_DSHOW + 0  # cv2.CAP_DSHOW changes internal api stuff for opencv
-    rightCamera = cv2.CAP_DSHOW + 1  # add/remove cv2.CAP_DSHOW as needed for your system
-    # Sets the exposure of the cameras. This process is finicky on what values are entered.
-    # leftCamera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)
-    # leftCamera.set(cv2.CAP_PROP_EXPOSURE, 100.0)
-    # Logger.log("Left exposure: " + str(leftCamera.get(cv2.CAP_PROP_EXPOSURE)))
-    # rightCamera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1.0)
-    # rightCamera.set(cv2.CAP_PROP_EXPOSURE, 100.0)
-    # Logger.log("Right exposure: " + str(rightCamera.get(cv2.CAP_PROP_EXPOSURE)))
-    cameraPath = "Data/Cameras/"
-    if not os.path.isdir(cameraPath):
-        cameraPath = "../" + cameraPath + "/"
+    leftCam = cv2.CAP_DSHOW + 0  # cv2.CAP_DSHOW changes internal api stuff for opencv
+    rightCam = cv2.CAP_DSHOW + 1  # add/remove cv2.CAP_DSHOW as needed for your system
     leftK, rightK, leftDistC, rightDistC = loadUndistortionFiles()
-    cameraLocks = [Lock(), Lock()]
-    initCameras(cameraPath, leftCamera, rightCamera, leftK, rightK, leftDistC, rightDistC, cameraLocks)
+    initCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, setExposure=False)
 
     Logger.log("SYSTEM INFORMATION:")
     # TODO
@@ -172,6 +158,7 @@ if __name__ == "__main__":
             Logger.log("Program shutdown...")
             break
 
+    closeCameras()
     cv2.destroyAllWindows()
     Logger.shutdown()  # Shuts down the logging system and prints a closing message to the file
     sys.exit(0)

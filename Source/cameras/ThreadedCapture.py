@@ -1,14 +1,18 @@
 from threading import Thread
 import cv2
 
-class threadedCapture:
+class ThreadedCapture:
     """
         Class that continuously gets frames from a VideoCapture object
         with a dedicated thread.
     """
     def __init__(self, source, K=None, distC=None, setExposure=False, autoExposure=1.0, exposure=100.0):
+        # basic checking with asserts that all data is present
+        if (K is not None) or (distC is not None):
+            assert ((K is not None) and (distC is not None)), "If K or distC is defined, then both must be defined"
         # define flow controllers
         self.stopped = False
+        self.success = True
         # define source, camera intrinsic matrix, distortion coefficients, and exposure settings
         self.source = source
         self.frame = None
@@ -18,7 +22,7 @@ class threadedCapture:
         self.setExposure = setExposure
         self.autoExposure = autoExposure
         self.exposure = exposure
-        # create the cv2 video capture to acquire either the recored video or webcam
+        # create the cv2 video capture to acquire either the recorded video or webcam
         try:
             self.capture = cv2.VideoCapture(source)
         except:
@@ -48,7 +52,7 @@ class threadedCapture:
         else:
             self.frame = frame
 
-    def getFrames(self):
+    def readFrames(self):
         while not self.stopped:
             if not self.success:
                 self.stop()
@@ -62,7 +66,7 @@ class threadedCapture:
 
     # starts the capture thread
     def start(self):
-        thread = Thread(target=self.getFrames, args=(),)
+        thread = Thread(target=self.readFrames, args=(),)
         thread.setDaemon(True)
         thread.start()
         return self
