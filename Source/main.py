@@ -6,6 +6,7 @@ import time
 # Additional libs
 import numpy as np
 import cv2
+import platform
 
 # Custom imports
 from logger import Logger
@@ -126,6 +127,17 @@ def optional():
 
 if __name__ == "__main__":
     Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
+
+    # Log system information
+    Logger.log("SYSTEM INFORMATION:")
+    uname = platform.uname()
+    Logger.log(f"   System: {uname.system}")
+    Logger.log(f"   Node Name: {uname.node}")
+    Logger.log(f"   Release: {uname.release}")
+    Logger.log(f"   Version: {uname.version}")
+    Logger.log(f"   Machine: {uname.machine}")
+    Logger.log(f"   Processor: {uname.processor}")
+
     #optional()
     # Global constants for any hyperparameters for the code or physical constants
     # Define any global constants
@@ -143,7 +155,6 @@ if __name__ == "__main__":
     leftK, rightK, leftDistC, rightDistC = loadUndistortionFiles()
     initCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, setExposure=False)
 
-    Logger.log("SYSTEM INFORMATION:")
     # TODO
     # print/log any nessecary system information
     Logger.log("Program starting...")

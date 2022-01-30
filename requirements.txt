@@ -2,3 +2,4 @@ numba
 numpy
 opencv-python
 smbus2
+psutil
