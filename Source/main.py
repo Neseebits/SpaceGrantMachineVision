@@ -112,19 +112,7 @@ def main():
             featureDenseFrameTimes = []
         numTotalIterations += 1
 
-
-# Function that will run some code one time before anything else
-# Primarily used for creating some files and/or testing some code
-def optional():
-    Logger.log("Running any optional code")
-    lk = np.asarray([[10,0,320],[0,10,240],[0,0,1]])
-    ld = np.asarray([[0],[0],[0],[0]])
-    rk = lk
-    rd = ld
-    writeKandDistNPZ(lk, rk, ld, rd)
-
-    Logger.log("Finished running any optional code")
-
+# denotes program entered in this file, the main thread
 if __name__ == "__main__":
     Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
 
@@ -138,7 +126,6 @@ if __name__ == "__main__":
     Logger.log(f"   Machine: {uname.machine}")
     Logger.log(f"   Processor: {uname.processor}")
 
-    #optional()
     # Global constants for any hyperparameters for the code or physical constants
     # Define any global constants
     errorTolerance = 2  # defines the amount of skipped/incomplete iterations before the loop is restarted
