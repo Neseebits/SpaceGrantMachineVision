@@ -9,9 +9,14 @@ import cv2
 from numba import jit
 
 # Custom  imports
-from logger import Logger
-import exceptions
-from cameras.CaptureManager import CaptureManager, createSourceData
+try:
+    from logger import Logger
+    import exceptions
+    from cameras.CaptureManager import CaptureManager, createSourceData
+except ImportError:
+    from Source.logger import Logger
+    from Source import exceptions
+    from Source.cameras.CaptureManager import CaptureManager, createSourceData
 
 # gets the camera frames from the captureManager
 def fetchCameraImages(leftSource, rightSource):

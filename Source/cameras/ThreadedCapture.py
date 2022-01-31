@@ -17,7 +17,8 @@ class ThreadedCapture:
         self.source = source
         self.frame = None
         self.K = K
-        self.newK = None
+        # results from cv2.getOptimalNewCameraMatrix
+        self.newK, self.roi, self.x, self.y, self.w, self.h = None, None, None, None, None, None
         self.distC = distC
         self.setExposure = setExposure
         self.autoExposure = autoExposure
@@ -38,9 +39,9 @@ class ThreadedCapture:
         try:
             success, frame = self.capture.read()
             if (self.K is not None) and (self.distC is not None):
-                p1 = (frame.shape[1], frame.shape[0])
-                p2 = (frame.shape[1], frame.shape[0])
-                self.newK, _ = cv2.getOptimalNewCameraMatrix(self.K, self.distC, p1, 1, p2)
+                h, w = frame.shape[:2]
+                self.newK, self.roi = cv2.getOptimalNewCameraMatrix(self.K, self.distC, (w,h), 1, (w,h))
+                self.x, self.y, self.w, self.h = self.roi
         except:
             raise Exception("Error computing new K matrix for video source: {}".format(self.source))
 
@@ -48,7 +49,8 @@ class ThreadedCapture:
     def readCapture(self):
         self.success, frame = self.capture.read()
         if self.newK is not None:
-            self.frame = cv2.undistort(frame, self.K, self.distC, None, self.newK)
+            frame = cv2.undistort(frame, self.K, self.distC, None, self.newK)
+            self.frame = frame[self.y:self.y+self.h, self.x:self.x+self.w]
         else:
             self.frame = frame
 
