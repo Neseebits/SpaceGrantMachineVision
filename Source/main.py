@@ -7,6 +7,7 @@ import time
 import numpy as np
 import cv2
 import platform
+import argparse
 
 # Custom imports
 try:
@@ -31,8 +32,6 @@ except ImportError:
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration
 def main():
-    HEADLESS = False
-
     numTotalIterations = 0
     consecutiveErrors = 0
     iterationCounter = 0
@@ -90,7 +89,7 @@ def main():
             # Resets the consecutive error count if a full iteration is completed
             consecutiveErrors = 0
             # cv2.waitKey is needed for opencv to properly display images (think of it like a timer or interrupt)
-            keyPressed = cv2.waitKey(10) & 0xFF
+            keyPressed = cv2.waitKey(1) & 0xFF
             if keyPressed == 27:
                 raise exceptions.KeyboardInterrupt("ESC")  # Quit on ESC
         except exceptions.KeyboardInterrupt as e:  # Kills the loop if a keyboardInterrupt occurs
@@ -125,6 +124,12 @@ def main():
 
 # denotes program entered in this file, the main thread
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-H", "--headless", help="Do not show debug windows", action='store_true', required=False)
+    args = parser.parse_args()
+    HEADLESS = True if args.headless else False
+
+    # begin logging and other startup methods for primary control flow
     Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
 
     # Log system information
@@ -155,6 +160,8 @@ if __name__ == "__main__":
     rightCam = cv2.CAP_DSHOW + 1  # add/remove cv2.CAP_DSHOW as needed for your system
     leftK, rightK, leftDistC, rightDistC = loadUndistortionFiles()
     initCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, setExposure=False)
+    # sleep time for cameras to read in a frame
+    time.sleep(.1)
 
     # TODO
     # print/log any nessecary system information

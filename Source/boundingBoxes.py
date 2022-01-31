@@ -43,3 +43,11 @@ def drawBoundingBoxes(rawImage, boundingBoxes, color=(0,0,255), thickness=2, win
         # DisplayManager.show(windowName, image)
         cv2.imshow(windowName, image)
     return image
+
+def determineConnection(box1, box2):
+    return True
+
+# functions that given bounding box data combines connected bounding boxes
+def combineBoundingBoxes(boundingBoxes, connectedness=8):
+    return boundingBoxes
+
