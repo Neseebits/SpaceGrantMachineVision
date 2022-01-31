@@ -9,10 +9,16 @@ import cv2
 from numba import jit
 
 # Custom  imports
-from logger import Logger
-import exceptions
-import utility
-
+try:
+    from logger import Logger
+    import exceptions
+    import utility
+    from cameras.DisplayManager import DisplayManager
+except ImportError:
+    from Source.logger import Logger
+    from Source import exceptions
+    from Source import utility
+    from Source.cameras.DisplayManager import DisplayManager
 
 # function that given to images computes their features
 # this does not do any filtering
@@ -82,6 +88,7 @@ def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=10
         # show the output
         if show:
             matchedImg = cv2.drawMatches(left, leftKp, right, rightKp, sortedMatches, None, flags=2)
+            # DisplayManager.show("Matched Features", matchedImg)
             cv2.imshow("Matched Features", matchedImg)
         return left_pts, right_pts, leftKp, leftDesc, rightKp, rightDesc
     except: # generic exception catcher, just return no list of points

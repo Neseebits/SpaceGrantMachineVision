@@ -10,12 +10,20 @@ import cv2
 from numba import jit, njit
 
 # Custom  imports
-from logger import Logger
-import exceptions
-import utility
-from features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
-from boundingBoxes import drawBoundingBoxes
-
+try:
+    from logger import Logger
+    import exceptions
+    import utility
+    from features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
+    from boundingBoxes import drawBoundingBoxes
+    from cameras.DisplayManager import DisplayManager
+except ImportError:
+    from Source.logger import Logger
+    from Source import exceptions
+    from Source import utility
+    from Source.features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
+    from Source.boundingBoxes import drawBoundingBoxes
+    from Source.cameras.DisplayManager import DisplayManager
 
 # given a point in x, y cordinates, an image, and an array of keypoints
 # determines if the surrounding region contains enough pixel of density

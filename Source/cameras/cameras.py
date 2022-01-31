@@ -12,11 +12,13 @@ from numba import jit
 try:
     from logger import Logger
     import exceptions
-    from cameras.CaptureManager import CaptureManager, createSourceData
+    from cameras.CaptureManager import CaptureManager, createCaptureSourceData
+    from cameras.DisplayManager import DisplayManager, createDisplaySourceData
 except ImportError:
     from Source.logger import Logger
     from Source import exceptions
-    from Source.cameras.CaptureManager import CaptureManager, createSourceData
+    from Source.cameras.CaptureManager import CaptureManager, createCaptureSourceData
+    from Source.cameras.DisplayManager import DisplayManager, createDisplaySourceData
 
 # gets the camera frames from the captureManager
 def fetchCameraImages(leftSource, rightSource):
@@ -38,9 +40,13 @@ def showCameras(left, right):
         newDim = (minWidth, minHeight)
         leftResize = cv2.resize(left, newDim)
         rightResize = cv2.resize(right, newDim)
-        cv2.imshow("Combined camera output", np.concatenate((leftResize, rightResize), axis=1))
+        displayImg = np.concatenate((leftResize, rightResize), axis=1)
+        # DisplayManager.show("Combined camera output", displayImg)
+        cv2.imshow("Combined camera output", displayImg)
     else:
-        cv2.imshow("Combined camera output", np.concatenate((left, right), axis=1))
+        displayImg = np.concatenate((left, right), axis=1)
+        # DisplayManager.show("Combined camera output", displayImg)
+        cv2.imshow("Combined camera output", displayImg)
 
 # gets the camera images from the capture manager
 # converts the images to grayscale
@@ -58,8 +64,8 @@ def fetchAndShowCameras(leftSource, rightSource, show=True):
 # creates the cameras sources for ThreadedCapture and runs them into CaptureManager
 def initCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, setExposure=False):
     # start CaptureManager for left and right cameras
-    left = createSourceData(leftCam, leftK, leftDistC, setExposure=setExposure)
-    right = createSourceData(rightCam, rightK, rightDistC, setExposure=setExposure)
+    left = createCaptureSourceData(leftCam, leftK, leftDistC, setExposure=setExposure)
+    right = createCaptureSourceData(rightCam, rightK, rightDistC, setExposure=setExposure)
     CaptureManager.init([left, right])
 
 # closes the camera sources

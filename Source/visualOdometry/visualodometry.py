@@ -9,7 +9,12 @@ import cv2
 from numba import jit
 
 # Custom  imports
-import exceptions
+try:
+    import exceptions
+    from cameras.DisplayManager import DisplayManager
+except ImportError:
+    from Source import exceptions
+    from Source.cameras.DisplayManager import DisplayManager
 
 # compute the disparity map of the two grayscale images given
 # takes a stereo matcher object and two grayscale images
@@ -20,6 +25,7 @@ def computeDisparity(stereo, left, right, show=False):
     disparity = stereo.compute(left, right).astype(np.float32)
     disparity = cv2.normalize(disparity, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
     if show:
+        # DisplayManager.show("Disparity map", disparity)
         cv2.imshow("Disparity map", disparity)
     return disparity
 

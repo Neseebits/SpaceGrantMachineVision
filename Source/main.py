@@ -9,13 +9,24 @@ import cv2
 import platform
 
 # Custom imports
-from logger import Logger
-import exceptions
-from cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras
-from visualOdometry.visualodometry import computeDisparity
-from features import computeMatchingPoints, getPointsFromKeypoints
-from objectDetection.featureDensity import findFeatureDenseBoundingBoxes
-from utility import getAvgTimeArr
+try:
+    from logger import Logger
+    import exceptions
+    from cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras
+    from cameras.DisplayManager import DisplayManager, createDisplaySourceData
+    from visualOdometry.visualodometry import computeDisparity
+    from features import computeMatchingPoints, getPointsFromKeypoints
+    from objectDetection.featureDensity import findFeatureDenseBoundingBoxes
+    from utility import getAvgTimeArr
+except ImportError:
+    from Source.logger import Logger
+    from Source.exceptions import exceptions
+    from Source.cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras
+    from Source.cameras.DisplayManager import DisplayManager, createDisplaySourceData
+    from Source.visualOdometry.visualodometry import computeDisparity
+    from Source.features import computeMatchingPoints, getPointsFromKeypoints
+    from Source.objectDetection.featureDensity import findFeatureDenseBoundingBoxes
+    from Source.utility import getAvgTimeArr
 
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration
@@ -135,6 +146,9 @@ if __name__ == "__main__":
     orb = cv2.ORB_create(nfeatures=1000)  # orb feature detector object
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)  # matcher object
     stereo = cv2.StereoSGBM_create()  # stereo object
+
+    # inits the DisplayManager
+    DisplayManager.init()
 
     # loading data for cameras and starting the camera process
     leftCam = cv2.CAP_DSHOW + 0  # cv2.CAP_DSHOW changes internal api stuff for opencv

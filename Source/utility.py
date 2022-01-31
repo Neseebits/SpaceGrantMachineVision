@@ -8,8 +8,12 @@ import numpy as np
 import cv2
 
 # Custom imports
-import exceptions
-from logger import Logger
+try:
+    import exceptions
+    from logger import Logger
+except ImportError:
+    from Source import exceptions
+    from Source.logger import Logger
 
 # get the height and width dimensions from an image
 def getHeightWidth(img):

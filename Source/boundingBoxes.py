@@ -10,8 +10,14 @@ import cv2
 from numba import jit, njit
 
 # Custom  imports
-from logger import Logger
-import exceptions
+try:
+    from logger import Logger
+    import exceptions
+    from cameras.DisplayManager import DisplayManager
+except ImportError:
+    from Source.logger import Logger
+    from Source import exceptions
+    from Source.cameras.DisplayManager import DisplayManager
 
 
 # gets the coordinates out of the bounding box list/array
@@ -34,5 +40,6 @@ def drawBoundingBoxes(rawImage, boundingBoxes, color=(0,0,255), thickness=2, win
         p1, p2, p3, p4 = getBoundingBoxPoints(box)
         cv2.rectangle(image, p1, p3, color, thickness)
     if show:
+        # DisplayManager.show(windowName, image)
         cv2.imshow(windowName, image)
     return image
