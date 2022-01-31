@@ -89,9 +89,10 @@ def main():
             # Resets the consecutive error count if a full iteration is completed
             consecutiveErrors = 0
             # cv2.waitKey is needed for opencv to properly display images (think of it like a timer or interrupt)
-            keyPressed = cv2.waitKey(1) & 0xFF
-            if keyPressed == 27:
-                raise exceptions.KeyboardInterrupt("ESC")  # Quit on ESC
+            if not HEADLESS:
+                keyPressed = cv2.waitKey(1) & 0xFF
+                if keyPressed == 27:
+                    raise exceptions.KeyboardInterrupt("ESC")  # Quit on ESC
         except exceptions.KeyboardInterrupt as e:  # Kills the loop if a keyboardInterrupt occurs
             Logger.log("User killed loop with: " + e.getKey())
             break
