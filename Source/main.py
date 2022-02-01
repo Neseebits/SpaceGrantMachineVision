@@ -39,6 +39,7 @@ def main():
     cameraFrameTimes = []
     featureFrameTimes = []
     featureDenseFrameTimes = []
+    disparityFrameTimes = []
     leftImage, rightImage, grayLeftImage, grayRightImage = None, None, None, None
     leftPts, rightPts, leftKp, leftDesc, rightKp, rightDesc = None, None, None, None, None, None
     featureDenseBoundingBoxes = None
@@ -74,16 +75,18 @@ def main():
                                                                       binSize=30.0, featuresPerPixel=0.04, show=not HEADLESS)
             featureDenseFrameTimes.append(time.time() - featureDenseStartTime)
 
+            disparityStartTime = time.time()
+            # this disparity map calculation should maybe get removed since we ??only?? care about the depth values
+            disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=not HEADLESS)
+            disparityFrameTimes.append(time.time() - disparityStartTime)
+
             # all additional functionality should be present within the === comments
             # additional data that needs to be stored for each iteration should be handled above
             #===========================================================================================================
-            if numTotalIterations > 1:
+            # TODO
+            # Fill in remainder of functionality
 
-                # this disparity map calculation should maybe get removed since we ??only?? care about the depth values
-                disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=not HEADLESS)
 
-                # TODO
-                # Fill in remainder of functionality
 
             #===========================================================================================================
             # Resets the consecutive error count if a full iteration is completed
@@ -106,7 +109,8 @@ def main():
                 Logger.log("RESTARTING PRIMARY CONTROL LOOP")
                 break
         if iterationCounter < iterationsToAverage:
-            iterationTimes.append(time.time() - iterationStartTime)
+            if iterationCounter != 0:
+                iterationTimes.append(time.time() - iterationStartTime)
             iterationCounter += 1
         else:
             iterNum = "#{} Total Iterations: ".format(numTotalIterations + 1)
@@ -115,12 +119,15 @@ def main():
             featureTimeStr = ", Avg features: {} {}".format(getAvgTimeArr(featureFrameTimes, iterationCounter), 'ms')
             objectDectTimeStr = ", Avg feature density: {} {}".format(getAvgTimeArr(featureDenseFrameTimes,
                                                                                     iterationCounter), 'ms')
-            Logger.log(iterNum + iterTimeStr + cameraTimeStr + featureTimeStr + objectDectTimeStr)
+            disparityTimeStr = ", Avg disparity map: {} {}".format(getAvgTimeArr(disparityFrameTimes,
+                                                                                 iterationCounter), 'ms')
+            Logger.log(iterNum + iterTimeStr + cameraTimeStr + featureTimeStr + objectDectTimeStr + disparityTimeStr)
             iterationCounter = 0
             iterationTimes = []
             cameraFrameTimes = []
             featureFrameTimes = []
             featureDenseFrameTimes = []
+            disparityFrameTimes = []
         numTotalIterations += 1
 
 # denotes program entered in this file, the main thread
