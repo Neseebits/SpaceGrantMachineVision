@@ -2,9 +2,7 @@
 # What is Spacegrant?
 A statewide program to provide students with hands-on experiences to develop engineering and science skills using the excitement of NASA. Great way to share and connect with other students from 20 institutions around Colorado.
 # Challenge Basic Rules
-Mass: Division 1: <1.5 kg goal
-
-              Division 2: < 4 kg
+Mass: Division 1: <1.5 kg goal, Division 2: < 4 kg
               
 Inexpensive: < $500 for final unit
 
