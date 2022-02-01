@@ -21,7 +21,7 @@ try:
     from utility import getAvgTimeArr
 except ImportError:
     from Source.logger import Logger
-    from Source.exceptions import exceptions
+    from Source import exceptions
     from Source.cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras
     from Source.cameras.DisplayManager import DisplayManager, createDisplaySourceData
     from Source.visualOdometry.visualodometry import computeDisparity
@@ -43,6 +43,7 @@ def main():
     leftImage, rightImage, grayLeftImage, grayRightImage = None, None, None, None
     leftPts, rightPts, leftKp, leftDesc, rightKp, rightDesc = None, None, None, None, None, None
     featureDenseBoundingBoxes = None
+    disparityMap = None
     while True:
         iterationStartTime = time.time()
         try:
@@ -55,6 +56,9 @@ def main():
             prevLeftKp, prevRightKp = leftKp, rightKp
             prevLeftDesc, prevRightDesc = leftDesc, rightDesc
             prevFeatureDenseBoundingBoxes = featureDenseBoundingBoxes
+
+            # save previous frame visual odometry information
+            prevDisparityMap = disparityMap
 
             cameraStartTime = time.time()
             # Satisfies that read images stage of control flow
@@ -173,16 +177,15 @@ if __name__ == "__main__":
     # sleep time for cameras to read in a frame
     time.sleep(.1)
 
-    # TODO
-    # print/log any nessecary system information
+    # being primary loop
     Logger.log("Program starting...")
     while True:
         Logger.log("Starting loop...")
         main()
         Logger.log("Shutdown loop...")
         # sleep and then check for keyboardInterupt will fully kill program
-        time.sleep(2)
-        keyPressed = cv2.waitKey(10) & 0xFF
+        time.sleep(1)
+        keyPressed = cv2.waitKey(1) & 0xFF
         if keyPressed == 27:
             Logger.log("Program shutdown...")
             break
