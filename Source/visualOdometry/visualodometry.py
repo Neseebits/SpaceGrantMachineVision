@@ -22,7 +22,7 @@ except ImportError:
 def computeDisparity(stereo, left, right, show=False):
     # TODO
     # implement kevin's visual odometry disparity map stuff here, although I think this is pretty close?????
-    disparity = stereo.compute(left, right).astype(np.float32)
+    disparity = stereo.compute(left, right).astype(np.float32) # <---- 30% of compute time is this line
     disparity = cv2.normalize(disparity, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
     if show:
         # DisplayManager.show("Disparity map", disparity)

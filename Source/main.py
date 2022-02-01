@@ -151,7 +151,9 @@ if __name__ == "__main__":
     # defining opencv objects
     orb = cv2.ORB_create(nfeatures=1000)  # orb feature detector object
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)  # matcher object
-    stereo = cv2.StereoSGBM_create()  # stereo object
+    # stereo object
+    stereo = cv2.StereoSGBM_create(minDisparity=5, numDisparities=32, blockSize=3, P1=128, P2=512, disp12MaxDiff=0,
+                                   preFilterCap=0, uniquenessRatio=5, speckleWindowSize=50, speckleRange=1)
 
     # inits the DisplayManager
     DisplayManager.init()
