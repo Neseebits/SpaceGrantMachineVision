@@ -69,14 +69,12 @@ def determineConnection(box1, box2, connectedness):
         # check if any point is the same
         for pt1 in pts1:
             for pt2 in pts2:
-                if pt1 == pt2:
+                if pt1[0] == pt2[0] and pt1[1] == pt2[1]:
                     return True
         return False
-    else:
-        raise exceptions.ConnectednessError(connectedness)
 
 # determines the new corners of the bounding box encapsulating two other bounding boxes
-@jit(nopython=True)
+# @jit(nopython=True)
 def determineMaxMinCorners(boundingBoxes):
     x1s = []
     y1s = []
@@ -96,7 +94,7 @@ def determineMaxMinCorners(boundingBoxes):
     return np.array([[minX, minY], [maxX, maxY]])
 
 # functions that given bounding box data combines connected bounding boxes
-@jit(nopython=True)
+# @jit(nopython=True)
 def combineBoundingBoxes(boundingBoxes, connectedness=4):
     if len(boundingBoxes) <= 1:
         return boundingBoxes
@@ -108,7 +106,10 @@ def combineBoundingBoxes(boundingBoxes, connectedness=4):
         for box2 in boundingBoxes:
             if determineConnection(box1, box2, connectedness):
                 connectedBoxes.append(box2)
-        simplifedBoxes.append(determineMaxMinCorners(connectedBoxes))
+        simplifedBox = determineMaxMinCorners(connectedBoxes)
+        if not (box1[0][0] == simplifedBox[0][0] and box1[0][1] == simplifedBox[0][1] and
+                box1[1][0] == simplifedBox[1][0] and box1[1][1] == simplifedBox[1][1]):
+            simplifedBoxes.append(simplifedBox)
         connectedBoxes = []
     return simplifedBoxes
 

@@ -86,7 +86,7 @@ def findFeatureDenseBoundingBoxes(image, pts, binSize=30.0, featuresPerPixel=0.0
     boundingBoxes = getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBins, binSize,
                                                  featuresPerPixel)
 
-    boundingBoxes = combineBoundingBoxes(boundingBoxes, connectedness=8)
+    boundingBoxes = combineBoundingBoxes(boundingBoxes, connectedness=4)
 
     if show:
         drawBoundingBoxes(image, boundingBoxes, windowName="Feature Dense Bounding Boxes", show=True)
