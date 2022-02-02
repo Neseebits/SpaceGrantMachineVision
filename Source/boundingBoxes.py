@@ -21,13 +21,18 @@ except ImportError:
 
 
 # gets the coordinates out of the bounding box list/array
+# bounding box must be a np.array
+# np.array([[x1, y1], [x2, y2]])
+@jit(nopython=True)
 def getBoundingBoxCords(box):
+    #      x1 [0]          y1 [1]          x2 [2]          y2 [3]
     return int(box[0][0]), int(box[0][1]), int(box[1][0]), int(box[1][1])
 
 # makes points out of the bounding box coordinates
+@jit(nopython=True)
 def getBoundingBoxPoints(box):
     x1, y1, x2, y2 = getBoundingBoxCords(box)
-    return [(x1, y1), (x2, y1), (x2, y2), (x1, y2)]
+    return np.array([(x1, y1), (x2, y1), (x2, y2), (x1, y2)])
 
 # image is a cv2 image, which is a numpy array
 # boundingBoxes is as follows
@@ -44,7 +49,8 @@ def drawBoundingBoxes(rawImage, boundingBoxes, color=(0,0,255), thickness=2, win
         cv2.imshow(windowName, image)
     return image
 
-# determine a connection between two bounding boxes
+# determine if there is a connection between two bounding boxes
+@jit(nopython=True)
 def determineConnection(box1, box2, connectedness):
     pts1 = getBoundingBoxPoints(box1)
     pts2 = getBoundingBoxPoints(box2)
@@ -69,9 +75,40 @@ def determineConnection(box1, box2, connectedness):
     else:
         raise exceptions.ConnectednessError(connectedness)
 
+# determines the new corners of the bounding box encapsulating two other bounding boxes
+@jit(nopython=True)
+def determineMaxMinCorners(boundingBoxes):
+    x1s = []
+    y1s = []
+    x2s = []
+    y2s = []
+    for box in boundingBoxes:
+        x1, y1, x2, y2 = getBoundingBoxCords(box)
+        x1s.append(x1)
+        y1s.append(y1)
+        x2s.append(x2)
+        y2s.append(y2)
+    minX = min(x1s)
+    maxX = max(x2s)
+    minY = min(y1s)
+    maxY = max(y2s)
+    # construct a new boundingBox
+    return np.array([[minX, minY], [maxX, maxY]])
+
 # functions that given bounding box data combines connected bounding boxes
+@jit(nopython=True)
 def combineBoundingBoxes(boundingBoxes, connectedness=4):
     if len(boundingBoxes) <= 1:
         return boundingBoxes
-    return boundingBoxes
+    # copy first element to back for circular checking
+    simplifedBoxes = []
+    connectedBoxes = []
+    for box1 in boundingBoxes:
+        connectedBoxes.append(box1)
+        for box2 in boundingBoxes:
+            if determineConnection(box1, box2, connectedness):
+                connectedBoxes.append(box2)
+        simplifedBoxes.append(determineMaxMinCorners(connectedBoxes))
+        connectedBoxes = []
+    return simplifedBoxes
 

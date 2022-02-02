@@ -15,14 +15,14 @@ try:
     import exceptions
     import utility
     from features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
-    from boundingBoxes import drawBoundingBoxes
+    from boundingBoxes import drawBoundingBoxes, combineBoundingBoxes
     from cameras.DisplayManager import DisplayManager
 except ImportError:
     from Source.logger import Logger
     from Source import exceptions
     from Source import utility
     from Source.features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
-    from Source.boundingBoxes import drawBoundingBoxes
+    from Source.boundingBoxes import drawBoundingBoxes, combineBoundingBoxes
     from Source.cameras.DisplayManager import DisplayManager
 
 # given a point in x, y cordinates, an image, and an array of keypoints
@@ -73,7 +73,7 @@ def getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBin
             dense, x1, y1, x2, y2 = isFeatureDense(x, y, imageWidth, imageHeight, pts, binSize, binSize,
                                                    featuresPerPixel)
             if dense:
-                boundingBoxes.append([[x1, y1], [x2, y2]])
+                boundingBoxes.append(np.array([[x1, y1], [x2, y2]]))
     return boundingBoxes
 
 # takes an image and returns bounding box coordinates
@@ -85,6 +85,8 @@ def findFeatureDenseBoundingBoxes(image, pts, binSize=30.0, featuresPerPixel=0.0
     # compute the bounding boxes where there are features exceeding a threshold
     boundingBoxes = getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBins, binSize,
                                                  featuresPerPixel)
+
+    boundingBoxes = combineBoundingBoxes(boundingBoxes, connectedness=8)
 
     if show:
         drawBoundingBoxes(image, boundingBoxes, windowName="Feature Dense Bounding Boxes", show=True)
