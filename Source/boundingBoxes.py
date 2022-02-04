@@ -50,7 +50,7 @@ def drawBoundingBoxes(rawImage, boundingBoxes, color=(0,0,255), thickness=2, win
     return image
 
 # checks each point in a boundingBox and determines they are equal if each point is equal
-@jit(nopython=True)
+# @jit(nopython=True)
 def boundingBoxEquals(box1, box2):
     if not (box1[0][0] == box2[0][0] and box1[0][1] == box2[0][1] and
             box1[1][0] == box2[1][0] and box1[1][1] == box2[1][1]):
@@ -58,7 +58,7 @@ def boundingBoxEquals(box1, box2):
     return True
 
 # determine if there is a connection between two bounding boxes
-@jit(nopython=True)
+# @jit(nopython=True)
 def determineConnection(box1, box2, connectedness):
     pts1 = getBoundingBoxPoints(box1)
     pts2 = getBoundingBoxPoints(box2)
@@ -83,7 +83,7 @@ def determineConnection(box1, box2, connectedness):
 
 # need a function to loop over boundingBoxes for the given bounding box, and determine if each one has a connection or not
 # when a box has a connection, that boundingBox must also be iterated over.
-@jit(nopython=True)
+# @jit(nopython=True)
 def findConnectedBoundingBoxes(startingBox, boundingBoxes, connectedness):
     connectedBoxes = np.array(startingBox)
     for box in connectedBoxes:
@@ -93,7 +93,7 @@ def findConnectedBoundingBoxes(startingBox, boundingBoxes, connectedness):
     return connectedBoxes
 
 # determines the new corners of the bounding box encapsulating two other bounding boxes
-@jit(nopython=True)
+# @jit(nopython=True)
 def determineMaxMinCorners(boundingBoxes):
     x1s = []
     y1s = []
@@ -123,7 +123,7 @@ def combineBoundingBoxes(boundingBoxes, connectedness=4):
     for box1 in boundingBoxes:
         connectedBoxes.append(box1)
         for box2 in boundingBoxes:
-            if determineConnection(box1, box2, connectedness):
+            if not boundingBoxEquals(box1, box2) and determineConnection(box1, box2, connectedness):
                 connectedBoxes.append(box2)
         simplifedBox = determineMaxMinCorners(connectedBoxes)
         if boundingBoxEquals(box1, simplifedBox):
