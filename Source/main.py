@@ -185,7 +185,10 @@ if __name__ == "__main__":
     leftK, rightK, leftDistC, rightDistC = loadUndistortionFiles()
     initCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, setExposure=False)
     # sleep time for cameras to read in a frame
-    time.sleep(.1)
+    leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
+    while leftImage is None or rightImage is None:
+        time.sleep(.01)
+        leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
     # initiate writers
     if RECORD:
         videoPath = "Data/Cameras/"
