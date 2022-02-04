@@ -13,7 +13,7 @@ import argparse
 try:
     from logger import Logger
     import exceptions
-    from cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras
+    from cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras, fetchCameraImages
     from cameras.DisplayManager import DisplayManager, createDisplaySourceData
     from visualOdometry.visualodometry import computeDisparity
     from features import computeMatchingPoints, getPointsFromKeypoints
@@ -93,6 +93,10 @@ def main():
 
 
             #===========================================================================================================
+            # handles saving the video feed
+            if RECORD:
+                leftWriter.write(leftImage)
+                rightWriter.write(rightImage)
             # Resets the consecutive error count if a full iteration is completed
             consecutiveErrors = 0
             # cv2.waitKey is needed for opencv to properly display images (think of it like a timer or interrupt)
@@ -140,9 +144,11 @@ if __name__ == "__main__":
     parser.add_argument("-H", "--headless", help="Do not show debug windows", action='store_true', required=False)
     parser.add_argument("-TD", "--threadeddisplay", help="Use threads to speed up displays in headed mode",
                         action="store_true", required=False)
+    parser.add_argument("-R", "--record", help="Record the camera inputs to videos", action='store_true', required=False)
     args = parser.parse_args()
     HEADLESS = True if args.headless else False
     THREADED_DISPLAY = True if args.threadeddisplay else False
+    RECORD = True if args.record else False
 
     # begin logging and other startup methods for primary control flow
     Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
@@ -179,6 +185,17 @@ if __name__ == "__main__":
     initCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, setExposure=False)
     # sleep time for cameras to read in a frame
     time.sleep(.1)
+    # initiate writers
+    if RECORD:
+        videoPath = "Data/Cameras/"
+        while not os.path.isdir(videoPath):
+            videoPath = "../" + videoPath
+        leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
+        height, width, _ = leftImage.shape
+        fourcc = cv2.VideoWriter_fourcc('W', 'M', 'V', '2')
+        fps = 24.0
+        leftWriter = cv2.VideoWriter(videoPath + "leftOutput.wmv", fourcc=fourcc, fps=fps, frameSize=(width, height))
+        rightWriter = cv2.VideoWriter(videoPath + "rightOutput.wmv", fourcc=fourcc, fps=fps, frameSize=(width, height))
 
     # being primary loop
     Logger.log("Program starting...")
@@ -194,6 +211,9 @@ if __name__ == "__main__":
             break
 
     closeCameras()
+    if RECORD:
+        leftWriter.close()
+        rightWriter.close()
     cv2.destroyAllWindows()
     Logger.shutdown()  # Shuts down the logging system and prints a closing message to the file
     sys.exit(0)
