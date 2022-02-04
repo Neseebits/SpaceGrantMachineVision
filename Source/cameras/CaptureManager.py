@@ -3,7 +3,7 @@ try:
 except ImportError:
     from Source.cameras.ThreadedCapture import ThreadedCapture
 
-def createSourceData(source, K=None, distC=None, setExposure=False, autoExposure=1.0, exposure=100.0):
+def createCaptureSourceData(source, K=None, distC=None, setExposure=False, autoExposure=1.0, exposure=100.0):
     return [source, K, distC, setExposure, autoExposure, exposure]
 
 class CaptureManager:

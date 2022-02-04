@@ -9,15 +9,21 @@ import cv2
 from numba import jit
 
 # Custom  imports
-from logger import Logger
-import exceptions
-import utility
-
+try:
+    from logger import Logger
+    import exceptions
+    import utility
+    from cameras.DisplayManager import DisplayManager
+except ImportError:
+    from Source.logger import Logger
+    from Source import exceptions
+    from Source import utility
+    from Source.cameras.DisplayManager import DisplayManager
 
 # function that given to images computes their features
 # this does not do any filtering
 # takes two grayscale images and a cv2 feature detector
-@jit(forceobj=True)
+# @jit(forceobj=True)
 def getImagePairKeyDesc(left, right, featureDetector):
     kp1, des1 = getImageKeyDesc(left, featureDetector)
     kp2, des2 = getImageKeyDesc(right, featureDetector)
@@ -26,7 +32,7 @@ def getImagePairKeyDesc(left, right, featureDetector):
 # get features for a single image
 # this does not do any filtering
 # takes a single greyscale image
-@jit(forceobj=True)
+# @jit(forceobj=True)
 def getImageKeyDesc(image, featureDetector):
     return featureDetector.detectAndCompute(image, None)
 
@@ -67,7 +73,7 @@ def ratioTest(kpMatches, ratio):
 # funtion that computes the matching features between two images and returns the corresponding points
 # takes two grayscale images, a feature detector, and a matcher
 # the showMatches optional parameter shows the total features and not the ones acquired through the ratio test
-def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=10.0, show=False):
+def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=3.5, show=False):
     try:
         leftKp, leftDesc, rightKp, rightDesc = getImagePairKeyDesc(left, right, featureDetector)
         matches = featureMatcher.match(leftDesc, rightDesc)
@@ -77,14 +83,21 @@ def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=10
         sortedMatches = sortMatches(matches)
         # perform ratio test on matching keypoints
         ratioMatches = ratioTest(sortedMatches, ratio=ratio)
+        if len(ratioMatches) == 0:
+            raise exceptions.FeatureMatchingError("computeMatchingPoints: No matched features left after ratio test performed")
         # extract image cordinates of matches
-        left_pts, right_pts = getPointsFromMatches(ratioMatches, leftKp, rightKp)
+        try:
+            left_pts, right_pts = getPointsFromMatches(ratioMatches, leftKp, rightKp)
+        except:
+            raise exceptions.FeatureMatchingError("computeMatchingPoints: Could not pull points from features")
         # show the output
         if show:
-            matchedImg = cv2.drawMatches(left, leftKp, right, rightKp, sortedMatches, None, flags=2)
-            cv2.imshow("Matched Features", matchedImg)
+            try:
+                matchedImg = cv2.drawMatches(left, leftKp, right, rightKp, ratioMatches, None, flags=2) #<- 7% compute time
+                # DisplayManager.show("Matched Features", matchedImg)
+                cv2.imshow("Matched Features", matchedImg)
+            except:
+                Logger.log("    computeMatchingPoints -> Failed to display matches")
         return left_pts, right_pts, leftKp, leftDesc, rightKp, rightDesc
-    except: # generic exception catcher, just return no list of points
-        Logger.log("Generating an exception inside of computeMatchingPoints")
-        # Logger.log(e)
-        return list(), list(), list(), list(), list(), list()
+    except Exception as e: # generic exception catcher, just return no list of points
+        raise e

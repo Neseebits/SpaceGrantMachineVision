@@ -10,12 +10,20 @@ import cv2
 from numba import jit, njit
 
 # Custom  imports
-from logger import Logger
-import exceptions
-import utility
-from features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
-from boundingBoxes import drawBoundingBoxes
-
+try:
+    from logger import Logger
+    import exceptions
+    import utility
+    from features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
+    from boundingBoxes import drawBoundingBoxes, combineBoundingBoxes
+    from cameras.DisplayManager import DisplayManager
+except ImportError:
+    from Source.logger import Logger
+    from Source import exceptions
+    from Source import utility
+    from Source.features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
+    from Source.boundingBoxes import drawBoundingBoxes, combineBoundingBoxes
+    from Source.cameras.DisplayManager import DisplayManager
 
 # given a point in x, y cordinates, an image, and an array of keypoints
 # determines if the surrounding region contains enough pixel of density
@@ -39,13 +47,16 @@ def isFeatureDense(x, y, iwidth, iheight, kp, width, height, featurePerPixel):
     if bottomBound >= iheight:
         bottomBound = iheight - 1
     # iterate over keypoints, determine if within boundary
+    # print(f"topBound:{topBound}, bottomBound:{bottomBound}, leftBound{leftBound}, rightBound{rightBound}")
     kpInRegion = 0.0
     for keypoint in kp:
         kx = keypoint[0]
         ky = keypoint[1]
         if (leftBound < kx < rightBound) and (topBound < ky < bottomBound):
             kpInRegion += 1.0
-    density = kpInRegion / (width * height)
+            # print(f"Keypoint x:{kx} y:{ky}")
+    density = kpInRegion / float(width * height)
+    # print(f"Density: {density}, kpInRegion: {kpInRegion}\n")
     if density >= featurePerPixel:
         return True, leftBound, topBound, rightBound, bottomBound
     else:
@@ -65,7 +76,7 @@ def getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBin
             dense, x1, y1, x2, y2 = isFeatureDense(x, y, imageWidth, imageHeight, pts, binSize, binSize,
                                                    featuresPerPixel)
             if dense:
-                boundingBoxes.append([[x1, y1], [x2, y2]])
+                boundingBoxes.append(np.array([[x1, y1], [x2, y2]]))
     return boundingBoxes
 
 # takes an image and returns bounding box coordinates
@@ -78,7 +89,10 @@ def findFeatureDenseBoundingBoxes(image, pts, binSize=30.0, featuresPerPixel=0.0
     boundingBoxes = getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBins, binSize,
                                                  featuresPerPixel)
 
+    # simplifiedBoundingBoxes = combineBoundingBoxes(boundingBoxes)
+
     if show:
         drawBoundingBoxes(image, boundingBoxes, windowName="Feature Dense Bounding Boxes", show=True)
+        # drawBoundingBoxes(image, simplifiedBoundingBoxes, windowName="Simplified FeatureDense BB", show=True)
 
     return boundingBoxes

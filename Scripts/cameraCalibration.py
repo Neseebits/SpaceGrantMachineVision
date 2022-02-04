@@ -4,7 +4,7 @@ import glob
 import numpy as np
 import pickle
 
-from Source.cameras.cameras import writeKandDistNPZ
+from writeKandDistC import writeKandDistNPZ
 
 # Interactively capture images for calibration and store them in the given directory
 def capture_calibration_images(camera_port, chessboard_size, save_directory):

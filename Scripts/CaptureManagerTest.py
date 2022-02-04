@@ -1,9 +1,9 @@
-from Source.cameras.CaptureManager import CaptureManager, createSourceData
+from Source.cameras.CaptureManager import CaptureManager, createCaptureSourceData
 import cv2
 
 if __name__ == '__main__' :
-    source1 = createSourceData(0)
-    source2 = createSourceData(1)
+    source1 = createCaptureSourceData(0)
+    source2 = createCaptureSourceData(1)
     CaptureManager.init([source1, source2])
 
     while True:
