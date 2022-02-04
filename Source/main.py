@@ -62,7 +62,9 @@ def main():
 
             cameraStartTime = time.perf_counter()
             # Satisfies that read images stage of control flow
-            leftImage, rightImage, grayLeftImage, grayRightImage = fetchAndShowCameras(leftCam, rightCam, show=not HEADLESS)
+            leftImage, rightImage, grayLeftImage, grayRightImage = fetchAndShowCameras(leftCam, rightCam,
+                                                                                    show=not HEADLESS,
+                                                                                    threadedDisplay=THREADED_DISPLAY)
             cameraFrameTimes.append(time.perf_counter() - cameraStartTime)
 
             featureStartTime = time.perf_counter()
@@ -70,13 +72,16 @@ def main():
             # the point at index [0], [1], [2], etc. in both is the same real life feature,
             leftPts, rightPts, leftKp, leftDesc, rightKp, rightDesc = computeMatchingPoints(grayLeftImage,
                                                                                             grayRightImage, orb,
-                                                                                            matcher, show=not HEADLESS)
+                                                                                            matcher, show=not HEADLESS,
+                                                                                    threadedDisplay=THREADED_DISPLAY)
             featureFrameTimes.append(time.perf_counter() - featureStartTime)
 
             featureDenseStartTime = time.perf_counter()
             # acquires the bounding box cordinates for areas of the image where there are dense features
             featureDenseBoundingBoxes = findFeatureDenseBoundingBoxes(leftImage, getPointsFromKeypoints(leftKp),
-                                                                      binSize=30.0, featuresPerPixel=0.03, show=not HEADLESS)
+                                                                      binSize=30.0, featuresPerPixel=0.03,
+                                                                      show=not HEADLESS,
+                                                                      threadedDisplay=THREADED_DISPLAY)
             featureDenseFrameTimes.append(time.perf_counter() - featureDenseStartTime)
 
             disparityStartTime = time.perf_counter()
@@ -198,6 +203,8 @@ if __name__ == "__main__":
         time.sleep(.01)
         leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
     # initiate writers
+    leftWriter = None
+    rightWriter = None
     if RECORD:
         videoPath = "Data/Cameras/"
         while not os.path.isdir(videoPath):
@@ -208,6 +215,11 @@ if __name__ == "__main__":
         fps = 24.0
         leftWriter = cv2.VideoWriter(videoPath + "leftOutput.wmv", fourcc=fourcc, fps=fps, frameSize=(width, height))
         rightWriter = cv2.VideoWriter(videoPath + "rightOutput.wmv", fourcc=fourcc, fps=fps, frameSize=(width, height))
+
+    # if the displays are in threaded mode then we need a new screen to capture the keyboard
+    if THREADED_DISPLAY:
+        input_image = np.zeros((300, 300))
+        cv2.imshow("Input Screen", input_image)
 
     # being primary loop
     Logger.log("Program starting...")
@@ -223,9 +235,11 @@ if __name__ == "__main__":
             break
 
     closeCameras()
-    if RECORD:
-        leftWriter.close()
-        rightWriter.close()
+    if leftWriter is not None:
+        leftWriter.release()
+    if rightWriter is not None:
+        rightWriter.release()
+    DisplayManager.stopDisplays()
     cv2.destroyAllWindows()
     Logger.shutdown()  # Shuts down the logging system and prints a closing message to the file
     sys.exit(0)
