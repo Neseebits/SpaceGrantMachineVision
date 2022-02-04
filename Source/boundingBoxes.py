@@ -50,7 +50,7 @@ def drawBoundingBoxes(rawImage, boundingBoxes, color=(0,0,255), thickness=2, win
     return image
 
 # checks each point in a boundingBox and determines they are equal if each point is equal
-# @jit(nopython=True)
+@jit(nopython=True)
 def boundingBoxEquals(box1, box2):
     if not (box1[0][0] == box2[0][0] and box1[0][1] == box2[0][1] and
             box1[1][0] == box2[1][0] and box1[1][1] == box2[1][1]):
@@ -58,7 +58,7 @@ def boundingBoxEquals(box1, box2):
     return True
 
 # determine if there is a connection between two bounding boxes
-# @jit(nopython=True)
+@jit(nopython=True)
 def determineConnection(box1, box2, connectedness):
     pts1 = getBoundingBoxPoints(box1)
     pts2 = getBoundingBoxPoints(box2)
@@ -95,6 +95,8 @@ def findConnectedBoundingBoxes(startingBox, boundingBoxes, connectedness):
 # determines the new corners of the bounding box encapsulating two other bounding boxes
 # @jit(nopython=True)
 def determineMaxMinCorners(boundingBoxes):
+    if len(boundingBoxes) == 1:
+        return boundingBoxes[0]
     x1s = []
     y1s = []
     x2s = []
@@ -114,20 +116,21 @@ def determineMaxMinCorners(boundingBoxes):
 
 # functions that given bounding box data combines connected bounding boxes
 # @jit(nopython=True)
-def combineBoundingBoxes(boundingBoxes, connectedness=4):
+def combineBoundingBoxes(boundingBoxes, connectedness=8):
     if len(boundingBoxes) <= 1:
         return boundingBoxes
     # copy first element to back for circular checking
-    simplifedBoxes = []
-    connectedBoxes = []
-    for box1 in boundingBoxes:
+    connectedBoxes = list()
+    simplifiedBoxes = list()
+    for i, box1 in enumerate(boundingBoxes):
         connectedBoxes.append(box1)
-        for box2 in boundingBoxes:
-            if not boundingBoxEquals(box1, box2) and determineConnection(box1, box2, connectedness):
-                connectedBoxes.append(box2)
-        simplifedBox = determineMaxMinCorners(connectedBoxes)
-        if boundingBoxEquals(box1, simplifedBox):
-            simplifedBoxes.append(simplifedBox)
-        connectedBoxes = []
-    return simplifedBoxes
+        for j, box2 in enumerate(boundingBoxes):
+            if i == j:
+                continue
+            if determineConnection(box1, box2, connectedness):
+                connectedBoxes.append(connectedBoxes.pop(j))
+                # need to erase the box that is appended or else it is double counted
+        simplifiedBoxes.append(determineMaxMinCorners(connectedBoxes))
+        connectedBoxes = list()
+    return simplifiedBoxes
 

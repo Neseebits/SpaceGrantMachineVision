@@ -47,13 +47,16 @@ def isFeatureDense(x, y, iwidth, iheight, kp, width, height, featurePerPixel):
     if bottomBound >= iheight:
         bottomBound = iheight - 1
     # iterate over keypoints, determine if within boundary
+    # print(f"topBound:{topBound}, bottomBound:{bottomBound}, leftBound{leftBound}, rightBound{rightBound}")
     kpInRegion = 0.0
     for keypoint in kp:
         kx = keypoint[0]
         ky = keypoint[1]
         if (leftBound < kx < rightBound) and (topBound < ky < bottomBound):
             kpInRegion += 1.0
-    density = kpInRegion / (width * height)
+            # print(f"Keypoint x:{kx} y:{ky}")
+    density = kpInRegion / float(width * height)
+    # print(f"Density: {density}, kpInRegion: {kpInRegion}\n")
     if density >= featurePerPixel:
         return True, leftBound, topBound, rightBound, bottomBound
     else:
@@ -86,9 +89,10 @@ def findFeatureDenseBoundingBoxes(image, pts, binSize=30.0, featuresPerPixel=0.0
     boundingBoxes = getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBins, binSize,
                                                  featuresPerPixel)
 
-    boundingBoxes = combineBoundingBoxes(boundingBoxes, connectedness=4)
+    simplifiedBoundingBoxes = combineBoundingBoxes(boundingBoxes)
 
     if show:
         drawBoundingBoxes(image, boundingBoxes, windowName="Feature Dense Bounding Boxes", show=True)
+        drawBoundingBoxes(image, simplifiedBoundingBoxes, windowName="Simplified FeatureDense BB", show=True)
 
     return boundingBoxes

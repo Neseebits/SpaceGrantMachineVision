@@ -45,7 +45,7 @@ def main():
     featureDenseBoundingBoxes = None
     disparityMap = None
     while True:
-        iterationStartTime = time.time()
+        iterationStartTime = time.perf_counter()
         try:
             # need to save previous images (if they exist) for visual odometry
             prevLeftImage, prevRightImage = leftImage, rightImage
@@ -60,29 +60,29 @@ def main():
             # save previous frame visual odometry information
             prevDisparityMap = disparityMap
 
-            cameraStartTime = time.time()
+            cameraStartTime = time.perf_counter()
             # Satisfies that read images stage of control flow
             leftImage, rightImage, grayLeftImage, grayRightImage = fetchAndShowCameras(leftCam, rightCam, show=not HEADLESS)
-            cameraFrameTimes.append(time.time() - cameraStartTime)
+            cameraFrameTimes.append(time.perf_counter() - cameraStartTime)
 
-            featureStartTime = time.time()
+            featureStartTime = time.perf_counter()
             # feature points for left and right images
             # the point at index [0], [1], [2], etc. in both is the same real life feature,
             leftPts, rightPts, leftKp, leftDesc, rightKp, rightDesc = computeMatchingPoints(grayLeftImage,
                                                                                             grayRightImage, orb,
                                                                                             matcher, show=not HEADLESS)
-            featureFrameTimes.append(time.time() - featureStartTime)
+            featureFrameTimes.append(time.perf_counter() - featureStartTime)
 
-            featureDenseStartTime = time.time()
+            featureDenseStartTime = time.perf_counter()
             # acquires the bounding box cordinates for areas of the image where there are dense features
             featureDenseBoundingBoxes = findFeatureDenseBoundingBoxes(leftImage, getPointsFromKeypoints(leftKp),
-                                                                      binSize=30.0, featuresPerPixel=0.04, show=not HEADLESS)
-            featureDenseFrameTimes.append(time.time() - featureDenseStartTime)
+                                                                      binSize=30.0, featuresPerPixel=0.03, show=not HEADLESS)
+            featureDenseFrameTimes.append(time.perf_counter() - featureDenseStartTime)
 
-            disparityStartTime = time.time()
+            disparityStartTime = time.perf_counter()
             # this disparity map calculation should maybe get removed since we ??only?? care about the depth values
             disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=not HEADLESS)
-            disparityFrameTimes.append(time.time() - disparityStartTime)
+            disparityFrameTimes.append(time.perf_counter() - disparityStartTime)
 
             # all additional functionality should be present within the === comments
             # additional data that needs to be stored for each iteration should be handled above
@@ -114,7 +114,7 @@ def main():
                 break
         if iterationCounter < iterationsToAverage:
             if iterationCounter != 0:
-                iterationTimes.append(time.time() - iterationStartTime)
+                iterationTimes.append(time.perf_counter() - iterationStartTime)
             iterationCounter += 1
         else:
             iterNum = "#{} Total Iterations: ".format(numTotalIterations + 1)
@@ -138,8 +138,11 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--headless", help="Do not show debug windows", action='store_true', required=False)
+    parser.add_argument("-TD", "--threadeddisplay", help="Use threads to speed up displays in headed mode",
+                        action="store_true", required=False)
     args = parser.parse_args()
     HEADLESS = True if args.headless else False
+    THREADED_DISPLAY = True if args.threadeddisplay else False
 
     # begin logging and other startup methods for primary control flow
     Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
