@@ -145,10 +145,18 @@ if __name__ == "__main__":
     parser.add_argument("-TD", "--threadeddisplay", help="Use threads to speed up displays in headed mode",
                         action="store_true", required=False)
     parser.add_argument("-R", "--record", help="Record the camera inputs to videos", action='store_true', required=False)
+    parser.add_argument("-CL", "--clearlog", help="Clears the log on running the program", action='store_true', required=False)
     args = parser.parse_args()
     HEADLESS = True if args.headless else False
     THREADED_DISPLAY = True if args.threadeddisplay else False
     RECORD = True if args.record else False
+    CLEARLOG = True if args.clearlog else False
+
+    # wipes the log ahead of the logger being restarted
+    if CLEARLOG:
+        with open("log.log", 'r+') as f:
+            f.truncate(0)
+            f.seek(0)
 
     # begin logging and other startup methods for primary control flow
     Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
@@ -164,7 +172,7 @@ if __name__ == "__main__":
     Logger.log(f"   Machine: {uname.machine}")
     Logger.log(f"   Processor: {uname.processor}")
 
-    # Global constants for any hyperparameters for the code or physical constants
+    # Global constants for any hyper parameters for the code or physical constants
     # Define any global constants
     errorTolerance = 2  # defines the amount of skipped/incomplete iterations before the loop is restarted
     iterationsToAverage = 9  # use n+1 to calculate true number averaged
