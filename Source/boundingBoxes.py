@@ -83,7 +83,7 @@ def determineConnection(box1, box2, connectedness):
 
 # need a function to loop over boundingBoxes for the given bounding box, and determine if each one has a connection or not
 # when a box has a connection, that boundingBox must also be iterated over.
-# @jit(nopython=True)
+@jit(nopython=True)
 def findConnectedBoundingBoxes(startingBox, boundingBoxes, connectedness):
     connectedBoxes = np.array(startingBox)
     for box in connectedBoxes:
@@ -93,7 +93,6 @@ def findConnectedBoundingBoxes(startingBox, boundingBoxes, connectedness):
     return connectedBoxes
 
 # determines the new corners of the bounding box encapsulating two other bounding boxes
-# @jit(nopython=True)
 def determineMaxMinCorners(boundingBoxes):
     if len(boundingBoxes) == 1:
         return boundingBoxes[0]
@@ -128,7 +127,7 @@ def combineBoundingBoxes(boundingBoxes, connectedness=8):
             if i == j:
                 continue
             if determineConnection(box1, box2, connectedness):
-                connectedBoxes.append(connectedBoxes.pop(j))
+                connectedBoxes.append(boundingBoxes.pop(j))
                 # need to erase the box that is appended or else it is double counted
         simplifiedBoxes.append(determineMaxMinCorners(connectedBoxes))
         connectedBoxes = list()
