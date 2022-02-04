@@ -155,6 +155,7 @@ if __name__ == "__main__":
 
     # Log system information
     Logger.log("SYSTEM INFORMATION:")
+    Logger.log(f"   Python Version: {sys.version}")
     uname = platform.uname()
     Logger.log(f"   System: {uname.system}")
     Logger.log(f"   Node Name: {uname.node}")
