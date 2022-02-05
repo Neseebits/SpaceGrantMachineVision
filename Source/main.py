@@ -16,6 +16,7 @@ from cameras import readAndShowCameras, getGrayscaleImages, writeKandDistNPZ
 from visualOdometry.visualodometry import computeDisparity
 from features import computeMatchingPoints, getPointsFromKeypoints
 from objectDetection.objectDetection import findFeatureDenseBoundingBoxes
+from nathanTesting import displayContours
 
 # takes an array of times and returns the average over a size
 def getAvgTimeArr(arr, size):
@@ -68,6 +69,12 @@ def main():
             featureDenseBoundingBoxes = findFeatureDenseBoundingBoxes(leftImage, getPointsFromKeypoints(leftKp),
                                                                       binSize=30.0, featuresPerPixel=0.01, show=True)
             featureDenseFrameTimes.append(time.time() - featureDenseStartTime)
+
+            # NATHAN STUFF
+            displayContours(grayLeftImage)
+            displayContours(grayRightImage)
+
+
 
             # all additional functionality should be present within the === comments
             # additional data that needs to be stored for each iteration should be handled above
