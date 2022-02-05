@@ -149,16 +149,18 @@ if __name__ == "__main__":
     parser.add_argument("-H", "--headless", help="Do not show debug windows", action='store_true', required=False)
     parser.add_argument("-TD", "--threadeddisplay", help="Use threads to speed up displays in headed mode",
                         action="store_true", required=False)
-    parser.add_argument("-R", "--record", help="Record the camera inputs to videos", action='store_true', required=False)
-    parser.add_argument("-CL", "--clearlog", help="Clears the log on running the program", action='store_true', required=False)
+    parser.add_argument("-R", "--record", help="Record the camera inputs to videos", action='store_true',
+                        required=False)
+    parser.add_argument("-CL", "--clearlog", help="Clears the log on running the program", action='store_true',
+                        required=False)
     args = parser.parse_args()
     HEADLESS = True if args.headless else False
     THREADED_DISPLAY = True if args.threadeddisplay else False
     RECORD = True if args.record else False
-    CLEARLOG = True if args.clearlog else False
+    CLEAR_LOG = True if args.clearlog else False
 
     # wipes the log ahead of the logger being restarted
-    if CLEARLOG:
+    if CLEAR_LOG:
         with open("log.log", 'r+') as f:
             f.truncate(0)
             f.seek(0)
