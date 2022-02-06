@@ -73,7 +73,7 @@ def ratioTest(kpMatches, ratio):
 # funtion that computes the matching features between two images and returns the corresponding points
 # takes two grayscale images, a feature detector, and a matcher
 # the showMatches optional parameter shows the total features and not the ones acquired through the ratio test
-def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=3.5, show=False):
+def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=3.5, show=False, threadedDisplay=True):
     try:
         leftKp, leftDesc, rightKp, rightDesc = getImagePairKeyDesc(left, right, featureDetector)
         matches = featureMatcher.match(leftDesc, rightDesc)
@@ -84,7 +84,7 @@ def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=3.
         # perform ratio test on matching keypoints
         ratioMatches = ratioTest(sortedMatches, ratio=ratio)
         if len(ratioMatches) == 0:
-            raise exceptions.FeatureMatchingError("computeMatchingPoints: No matched features left after ratio test performed")
+            ratioMatches = sortedMatches
         # extract image cordinates of matches
         try:
             left_pts, right_pts = getPointsFromMatches(ratioMatches, leftKp, rightKp)
@@ -94,8 +94,10 @@ def computeMatchingPoints(left, right, featureDetector, featureMatcher, ratio=3.
         if show:
             try:
                 matchedImg = cv2.drawMatches(left, leftKp, right, rightKp, ratioMatches, None, flags=2) #<- 7% compute time
-                # DisplayManager.show("Matched Features", matchedImg)
-                cv2.imshow("Matched Features", matchedImg)
+                if threadedDisplay:
+                    DisplayManager.show("Matched Features", matchedImg)
+                else:
+                    cv2.imshow("Matched Features", matchedImg)
             except:
                 Logger.log("    computeMatchingPoints -> Failed to display matches")
         return left_pts, right_pts, leftKp, leftDesc, rightKp, rightDesc

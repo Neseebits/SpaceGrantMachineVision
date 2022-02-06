@@ -33,7 +33,7 @@ def getGrayscaleImages(left, right):
 # Takes the images as two arguments: left, right images
 # Has no return value
 @jit(forceobj=True)
-def showCameras(left, right):
+def showCameras(left, right, threadedDisplay=True):
     if (left.shape != right.shape):
         minHeight = min(left.shape[0], right.shape[0])
         minWidth = min(left.shape[1], right.shape[1])
@@ -41,22 +41,23 @@ def showCameras(left, right):
         leftResize = cv2.resize(left, newDim)
         rightResize = cv2.resize(right, newDim)
         displayImg = np.concatenate((leftResize, rightResize), axis=1)
-        # DisplayManager.show("Combined camera output", displayImg)
-        cv2.imshow("Combined camera output", displayImg)
     else:
         displayImg = np.concatenate((left, right), axis=1)
-        # DisplayManager.show("Combined camera output", displayImg)
+
+    if threadedDisplay:
+        DisplayManager.show("Combined camera output", displayImg)
+    else:
         cv2.imshow("Combined camera output", displayImg)
 
 # gets the camera images from the capture manager
 # converts the images to grayscale
 # shows the images
-def fetchAndShowCameras(leftSource, rightSource, show=True):
+def fetchAndShowCameras(leftSource, rightSource, show=True, threadedDisplay=True):
     try:
         left, right = fetchCameraImages(leftSource, rightSource)
         grayLeft, grayRight = getGrayscaleImages(left, right)
         if show:
-            showCameras(left, right)
+            showCameras(left, right, threadedDisplay)
         return left, right, grayLeft, grayRight
     except Exception as e:
         raise e

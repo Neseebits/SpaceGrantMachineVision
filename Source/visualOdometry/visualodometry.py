@@ -19,14 +19,16 @@ except ImportError:
 # compute the disparity map of the two grayscale images given
 # takes a stereo matcher object and two grayscale images
 @jit(forceobj=True)
-def computeDisparity(stereo, left, right, show=False):
+def computeDisparity(stereo, left, right, show=False, threadedDisplay=True):
     # TODO
     # implement kevin's visual odometry disparity map stuff here, although I think this is pretty close?????
     disparity = stereo.compute(left, right).astype(np.float32) # <---- 30% of compute time is this line
     disparity = cv2.normalize(disparity, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)
     if show:
-        # DisplayManager.show("Disparity map", disparity)
-        cv2.imshow("Disparity map", disparity)
+        if threadedDisplay:
+            DisplayManager.show("Disparity map", disparity)
+        else:
+            cv2.imshow("Disparity map", disparity)
     return disparity
 
 # BELOW IS DONG LEES VISUAL ODOMETRY CODE

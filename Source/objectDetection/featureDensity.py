@@ -80,7 +80,7 @@ def getFeatureDenseBoundingBoxes(imageWidth, imageHeight, pts, horzBins, vertBin
     return boundingBoxes
 
 # takes an image and returns bounding box coordinates
-def findFeatureDenseBoundingBoxes(image, pts, binSize=30.0, featuresPerPixel=0.01, show=False):
+def findFeatureDenseBoundingBoxes(image, pts, binSize=30.0, featuresPerPixel=0.01, show=False, threadedDisplay=True):
     # compute dimensional information
     imageHeight, imageWidth = image.shape[0], image.shape[1]
     horzBins, vertBins = math.ceil(imageWidth / binSize), math.ceil(imageHeight / binSize)
@@ -92,7 +92,7 @@ def findFeatureDenseBoundingBoxes(image, pts, binSize=30.0, featuresPerPixel=0.0
     # simplifiedBoundingBoxes = combineBoundingBoxes(boundingBoxes)
 
     if show:
-        drawBoundingBoxes(image, boundingBoxes, windowName="Feature Dense Bounding Boxes", show=True)
+        drawBoundingBoxes(image, boundingBoxes, windowName="Feature Dense Bounding Boxes", show=True, threadedDisplay=threadedDisplay)
         # drawBoundingBoxes(image, simplifiedBoundingBoxes, windowName="Simplified FeatureDense BB", show=True)
 
     return boundingBoxes
