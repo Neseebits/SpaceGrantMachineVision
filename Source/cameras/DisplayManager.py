@@ -1,3 +1,5 @@
+import cv2
+
 try:
     from cameras.ThreadedDisplay import ThreadedDisplay
 except ImportError:
@@ -36,9 +38,17 @@ class DisplayManager:
     @classmethod
     def stopDisplay(cls, windowName):
         cls.displays[windowName].stop()
+        try:
+            cv2.destroyWindow(windowName)
+        except Exception:
+            pass
 
     # stops all displays
     @classmethod
     def stopDisplays(cls):
         for source, thread in cls.displays.items():
             thread.stop()
+            try:
+                cv2.destroyWindow(source)
+            except Exception:
+                pass
