@@ -44,6 +44,8 @@ def drawBoundingBoxes(rawImage, boundingBoxes, color=(0,0,255), thickness=2, win
     image = np.copy(rawImage)
     for box in boundingBoxes:
         [p1, p2, p3, p4] = getBoundingBoxPoints(box)
+        if isinstance(p1, np.ndarray) or isinstance(p3, np.ndarray):
+            p1, p3 = (p1[0], p1[1]), (p3[0], p3[1])
         cv2.rectangle(image, p1, p3, color, thickness)
     if show:
         if threadedDisplay:

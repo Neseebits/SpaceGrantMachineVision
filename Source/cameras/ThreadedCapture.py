@@ -1,5 +1,7 @@
 from threading import Thread
+from collections import deque
 import cv2
+import os
 
 class ThreadedCapture:
     """
@@ -7,6 +9,13 @@ class ThreadedCapture:
         with a dedicated thread.
     """
     def __init__(self, source, K=None, distC=None, setExposure=False, autoExposure=1.0, exposure=100.0):
+        # check if the source is a video file
+        if os.path.exists(source):
+            self.video = True
+            self.frameQ = deque()
+        else:
+            self.video = False
+            self.frameQ = None
         # basic checking with asserts that all data is present
         if (K is not None) or (distC is not None):
             assert ((K is not None) and (distC is not None)), "If K or distC is defined, then both must be defined"
@@ -48,9 +57,14 @@ class ThreadedCapture:
     # reads the most recent image from the camera and saves it to self.frame
     def readCapture(self):
         self.success, frame = self.capture.read()
+        if not self.success:
+            self.stopped = True
+            return
         if self.newK is not None:
             frame = cv2.undistort(frame, self.K, self.distC, None, self.newK)
-            self.frame = frame[self.y:self.y+self.h, self.x:self.x+self.w]
+            frame = frame[self.y:self.y+self.h, self.x:self.x+self.w]
+        if self.frameQ is not None:
+            self.frameQ.append(frame)
         else:
             self.frame = frame
 
@@ -64,6 +78,11 @@ class ThreadedCapture:
 
     # returns the current frame
     def getFrame(self):
+        if self.frameQ is not None:
+            try:
+                return self.frameQ.popleft()
+            except Exception:
+                return None
         return self.frame
 
     # starts the capture thread
