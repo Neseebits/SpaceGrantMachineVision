@@ -29,6 +29,26 @@ except ImportError:
     from Source.objectDetection.featureDensity import findFeatureDenseBoundingBoxes
     from Source.utility import getAvgTimeArr
 
+def startupLogging():
+    # begin logging and other startup methods for primary control flow
+    Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
+
+    # Log system information
+    Logger.log("SYSTEM INFORMATION:")
+    Logger.log(f"   Python Version: {sys.version}")
+    uname = platform.uname()
+    Logger.log(f"   System: {uname.system}")
+    Logger.log(f"   Node Name: {uname.node}")
+    Logger.log(f"   Release: {uname.release}")
+    Logger.log(f"   Version: {uname.version}")
+    Logger.log(f"   Machine: {uname.machine}")
+    Logger.log(f"   Processor: {uname.processor}")
+
+def logArguments(args):
+    Logger.log("ARGUMENTS:")
+    for arg in vars(args):
+        Logger.log(f"    {arg}: {getattr(args, arg)}")
+
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration
 def main():
@@ -145,6 +165,8 @@ def main():
 
 # denotes program entered in this file, the main thread
 if __name__ == "__main__":
+    startupLogging()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-H", "--headless", help="Do not show debug windows", action='store_true', required=False)
     parser.add_argument("-TD", "--threadeddisplay", help="Use threads to speed up displays in headed mode",
@@ -153,7 +175,13 @@ if __name__ == "__main__":
                         required=False)
     parser.add_argument("-CL", "--clearlog", help="Clears the log on running the program", action='store_true',
                         required=False)
+    parser.add_argument("-V", "--video", help="Set a video folder which contains a left and right camera feed",
+                        nargs='?', const='Data/Cameras/DefaultVideo/')
     args = parser.parse_args()
+
+    # log all arguments
+    logArguments(args)
+
     HEADLESS = True if args.headless else False
     THREADED_DISPLAY = True if args.threadeddisplay else False
     RECORD = True if args.record else False
@@ -165,19 +193,14 @@ if __name__ == "__main__":
             f.truncate(0)
             f.seek(0)
 
-    # begin logging and other startup methods for primary control flow
-    Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
-
-    # Log system information
-    Logger.log("SYSTEM INFORMATION:")
-    Logger.log(f"   Python Version: {sys.version}")
-    uname = platform.uname()
-    Logger.log(f"   System: {uname.system}")
-    Logger.log(f"   Node Name: {uname.node}")
-    Logger.log(f"   Release: {uname.release}")
-    Logger.log(f"   Version: {uname.version}")
-    Logger.log(f"   Machine: {uname.machine}")
-    Logger.log(f"   Processor: {uname.processor}")
+    # finds the video directory
+    if args.video is not None:
+        counter = 0
+        while not os.path.isdir(args.video):
+            args.video = "../" + args.video
+            counter += 1
+            if counter > 5:
+                raise Exception("Could not find specified folder")
 
     # Global constants for any hyper parameters for the code or physical constants
     # Define any global constants
@@ -195,8 +218,12 @@ if __name__ == "__main__":
     DisplayManager.init()
 
     # loading data for cameras and starting the camera process
-    leftCam = cv2.CAP_DSHOW + 0  # cv2.CAP_DSHOW changes internal api stuff for opencv
-    rightCam = cv2.CAP_DSHOW + 1  # add/remove cv2.CAP_DSHOW as needed for your system
+    if args.video is None:
+        leftCam = cv2.CAP_DSHOW + 0  # cv2.CAP_DSHOW changes internal api stuff for opencv
+        rightCam = cv2.CAP_DSHOW + 1  # add/remove cv2.CAP_DSHOW as needed for your system
+    else:
+        leftCam = args.video + "stereo_left.avi"
+        rightCam = args.video + "stereo_right.avi"
     leftK, rightK, leftDistC, rightDistC = loadUndistortionFiles()
     initCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, setExposure=False)
     # sleep time for cameras to read in a frame
@@ -208,13 +235,13 @@ if __name__ == "__main__":
     leftWriter = None
     rightWriter = None
     if RECORD:
-        videoPath = "Data/Cameras/"
+        videoPath = "Data/Cameras/RawOutput/"
         while not os.path.isdir(videoPath):
             videoPath = "../" + videoPath
         leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
         height, width, _ = leftImage.shape
         fourcc = cv2.VideoWriter_fourcc('W', 'M', 'V', '2')
-        fps = 24.0
+        fps = 16.0
         leftWriter = cv2.VideoWriter(videoPath + "leftOutput.wmv", fourcc=fourcc, fps=fps, frameSize=(width, height))
         rightWriter = cv2.VideoWriter(videoPath + "rightOutput.wmv", fourcc=fourcc, fps=fps, frameSize=(width, height))
 
