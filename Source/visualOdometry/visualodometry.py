@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+from multiprocessing import Process, Queue
 
 # Additional libs
 import numpy as np
@@ -18,7 +19,7 @@ except ImportError:
 
 # compute the disparity map of the two grayscale images given
 # takes a stereo matcher object and two grayscale images
-@jit(forceobj=True)
+# @jit(forceobj=True)
 def computeDisparity(stereo, left, right, show=False, threadedDisplay=True):
     # TODO
     # implement kevin's visual odometry disparity map stuff here, although I think this is pretty close?????
@@ -30,6 +31,32 @@ def computeDisparity(stereo, left, right, show=False, threadedDisplay=True):
         else:
             cv2.imshow("Disparity map", disparity)
     return disparity
+
+# multiprocessed disparity map calculation
+# uses file io to deliver image back
+def multiProcessComputeDisparity(leftQueue, rightQueue, disparityQueue):
+    # stereo object
+    stereo = cv2.StereoSGBM_create(minDisparity=5, numDisparities=32, blockSize=3, P1=128, P2=512, disp12MaxDiff=0,
+                                   preFilterCap=0, uniquenessRatio=5, speckleWindowSize=50, speckleRange=1)
+    while True:
+        disparity = computeDisparity(stereo, leftQueue.get(), rightQueue.get(), show=False, threadedDisplay=False)
+        # if the queue is not empty, we must clear it then push the new disparity
+        # while not disparityQueue.empty():
+        #     _ = disparityQueue.get()
+        disparityQueue.put(disparity)
+
+def putCameraFrames(left, right, leftQ, rightQ):
+    leftQ.put(left)
+    rightQ.put(right)
+
+def getDisparityMap(dQueue):
+    return dQueue.get()
+
+def initVisualOdometry():
+    leftQ, rightQ, dQueue = Queue(), Queue(), Queue()
+    p = Process(target=multiProcessComputeDisparity, args=(leftQ, rightQ, dQueue,), daemon=True)
+    p.start()
+    return leftQ, rightQ, dQueue
 
 # BELOW IS DONG LEES VISUAL ODOMETRY CODE
 # ==================================================
