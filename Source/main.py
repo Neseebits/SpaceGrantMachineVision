@@ -2,13 +2,12 @@
 import os
 import sys
 import time
-import argparse
-import multiprocessing as mp
 
 # Additional libs
 import numpy as np
 import cv2
 import platform
+import argparse
 
 # Custom imports
 try:
@@ -16,7 +15,7 @@ try:
     import exceptions
     from cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras, fetchCameraImages
     from cameras.DisplayManager import DisplayManager, createDisplaySourceData
-    from visualOdometry.visualodometry import initVisualOdometry, putCameraFrames, getDisparityMap
+    from visualOdometry.visualodometry import computeDisparity
     from features import computeMatchingPoints, getPointsFromKeypoints
     from objectDetection.featureDensity import findFeatureDenseBoundingBoxes
     from utility import getAvgTimeArr
@@ -25,7 +24,7 @@ except ImportError:
     from Source import exceptions
     from Source.cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras
     from Source.cameras.DisplayManager import DisplayManager, createDisplaySourceData
-    from Source.visualOdometry.visualodometry import initVisualOdometry, putCameraFrames, getDisparityMap
+    from Source.visualOdometry.visualodometry import computeDisparity
     from Source.features import computeMatchingPoints, getPointsFromKeypoints
     from Source.objectDetection.featureDensity import findFeatureDenseBoundingBoxes
     from Source.utility import getAvgTimeArr
@@ -68,9 +67,6 @@ def main():
                                                                                     threadedDisplay=THREADED_DISPLAY)
             cameraFrameTimes.append(time.perf_counter() - cameraStartTime)
 
-            # add the frames to the queues
-            putCameraFrames(leftImage, rightImage, leftQueue, rightQueue)
-
             featureStartTime = time.perf_counter()
             # feature points for left and right images
             # the point at index [0], [1], [2], etc. in both is the same real life feature,
@@ -90,8 +86,7 @@ def main():
 
             disparityStartTime = time.perf_counter()
             # this disparity map calculation should maybe get removed since we ??only?? care about the depth values
-            disparityMap = getDisparityMap(disparityQueue)
-            DisplayManager.show("Disparity Map", disparityMap)
+            disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=not HEADLESS)
             disparityFrameTimes.append(time.perf_counter() - disparityStartTime)
 
             # all additional functionality should be present within the === comments
@@ -192,9 +187,9 @@ if __name__ == "__main__":
     # defining opencv objects
     orb = cv2.ORB_create(nfeatures=1000)  # orb feature detector object
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)  # matcher object
-
-    # starts visuaul odometry
-    leftQueue, rightQueue, disparityQueue = initVisualOdometry()
+    # stereo object
+    stereo = cv2.StereoSGBM_create(minDisparity=5, numDisparities=32, blockSize=3, P1=128, P2=512, disp12MaxDiff=0,
+                                   preFilterCap=0, uniquenessRatio=5, speckleWindowSize=50, speckleRange=1)
 
     # inits the DisplayManager
     DisplayManager.init()
