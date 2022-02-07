@@ -33,7 +33,7 @@ def computeDisparity(stereo, left, right, show=False, threadedDisplay=True):
     return disparity
 
 # multiprocessed disparity map calculation
-# uses file io to deliver image back
+# uses mp Queue to transfer images
 def multiProcessComputeDisparity(leftQueue, rightQueue, disparityQueue):
     # stereo object
     stereo = cv2.StereoSGBM_create(minDisparity=5, numDisparities=32, blockSize=3, P1=128, P2=512, disp12MaxDiff=0,
