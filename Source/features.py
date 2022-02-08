@@ -11,9 +11,9 @@ try:
     from utilities import exceptions
     from cameras.DisplayManager import DisplayManager
 except ImportError:
-    from logger.logger import Logger
+    from Source.logger.logger import Logger
     from Source import exceptions
-    from cameras.DisplayManager import DisplayManager
+    from Source.cameras.DisplayManager import DisplayManager
 
 # function that given to images computes their features
 # this does not do any filtering

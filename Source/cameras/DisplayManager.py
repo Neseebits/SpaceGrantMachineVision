@@ -3,7 +3,7 @@ import cv2
 try:
     from cameras.ThreadedDisplay import ThreadedDisplay
 except ImportError:
-    from cameras.ThreadedDisplay import ThreadedDisplay
+    from Source.cameras.ThreadedDisplay import ThreadedDisplay
 
 def createDisplaySourceData(windowName="Output", frame=None):
     return [windowName, frame]

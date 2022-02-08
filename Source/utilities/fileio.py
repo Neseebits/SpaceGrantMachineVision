@@ -8,7 +8,7 @@ import cv2
 try:
     from logger.logger import Logger
 except ImportError:
-    from logger.logger import Logger
+    from Source.logger.logger import Logger
 
 
 # read all images in given folder, if recurse is true will also get all images in sub_folders of the given folder

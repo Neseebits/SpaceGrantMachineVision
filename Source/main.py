@@ -20,16 +20,16 @@ try:
     from utilities.timing import getAvgTimeArr
     from utilities.arguments import getArgDict, getArgFlags, handleRecordFlag, handleClearLogFlag, handleVideoFlag, handleRecordFlagClose, handleThreadedDisplayFlag
 except ImportError:
-    from logger.logger import Logger
-    from logger.loggingCalls import logArguments, logSysteminfo
-    from utilities import exceptions
-    from cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras
-    from cameras.DisplayManager import DisplayManager, createDisplaySourceData
-    from visualOdometry.visualodometry import computeDisparity
-    from features import computeMatchingPoints, getPointsFromKeypoints
-    from objectDetection.featureDensity import findFeatureDenseBoundingBoxes
-    from utilities.timing import getAvgTimeArr
-    from utilities.arguments import getArgDict, getArgFlags, handleRecordFlag, handleClearLogFlag, handleVideoFlag, handleRecordFlagClose, handleThreadedDisplayFlag
+    from Source.logger.logger import Logger
+    from Source.logger.loggingCalls import logArguments, logSysteminfo
+    from Source.utilities import exceptions
+    from Source.cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras
+    from Source.cameras.DisplayManager import DisplayManager, createDisplaySourceData
+    from Source.visualOdometry.visualodometry import computeDisparity
+    from Source.features import computeMatchingPoints, getPointsFromKeypoints
+    from Source.objectDetection.featureDensity import findFeatureDenseBoundingBoxes
+    from Source.utilities.timing import getAvgTimeArr
+    from Source.utilities.arguments import getArgDict, getArgFlags, handleRecordFlag, handleClearLogFlag, handleVideoFlag, handleRecordFlagClose, handleThreadedDisplayFlag
 
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration

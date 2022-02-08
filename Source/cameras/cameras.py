@@ -9,15 +9,15 @@ from numba import jit
 
 # Custom  imports
 try:
-    from logger import Logger
-    import exceptions
+    from logger.logger import Logger
+    import utilities.exceptions
     from cameras.CaptureManager import CaptureManager, createCaptureSourceData
     from cameras.DisplayManager import DisplayManager, createDisplaySourceData
 except ImportError:
-    from logger.logger import Logger
-    from utilities import exceptions
-    from cameras.CaptureManager import CaptureManager, createCaptureSourceData
-    from cameras.DisplayManager import DisplayManager, createDisplaySourceData
+    from Source.logger.logger import Logger
+    from Source.utilities import exceptions
+    from Source.cameras.CaptureManager import CaptureManager, createCaptureSourceData
+    from Source.cameras.DisplayManager import DisplayManager, createDisplaySourceData
 
 # gets the camera frames from the captureManager
 def fetchCameraImages(leftSource, rightSource):

@@ -13,8 +13,8 @@ try:
     from logger.logger import Logger
     from cameras.cameras import fetchCameraImages
 except ImportError:
-    from logger.logger import Logger
-    from cameras.cameras import fetchCameraImages
+    from Source.logger.logger import Logger
+    from Source.cameras.cameras import fetchCameraImages
 
 def getArguments() -> Namespace:
     parser = ArgumentParser()
