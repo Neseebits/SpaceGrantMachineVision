@@ -1,29 +1,16 @@
 # Built in python libs
 import os
-import sys
-import time
 
 # Additional libs
-import numpy as np
 import cv2
 
 # Custom imports
 try:
-    import exceptions
-    from logger import Logger
+    from logger.logger import Logger
 except ImportError:
-    from Source import exceptions
-    from Source.logger import Logger
+    from Source.logger.logger import Logger
 
-# get the height and width dimensions from an image
-def getHeightWidth(img):
-    return img.shape[0], img.shape[1]
 
-# takes an array of times and returns the average over a size
-def getAvgTimeArr(arr, size):
-    return round((sum(arr) / size) * 1000, 1)
-
-# UNTESTED
 # read all images in given folder, if recurse is true will also get all images in sub_folders of the given folder
 # prints an error if cv2.imread() throws an exception
 # it is valid for there to be non image files in the directories, this will ignore those
@@ -34,11 +21,11 @@ def readImagesFromFolder(folder, recurse):
         for root, dirs, files in os.walk(folder): # os.walk finds everything in a given directory
             for file in files: # only care about files for loading images
                 # try/except for opening images, because there could be files we don't want in there, but still want the images
-                try: 
+                try:
                     image = cv2.imread(file)
                     if image is not None:
                         allImages.append(image)
-                except: 
+                except:
                     Logger.log("Attempted to open file: {}".format(file))
             # If the want to get images recursively
             if recurse:
@@ -50,4 +37,3 @@ def readImagesFromFolder(folder, recurse):
         return allImages
     except Exception as e:
         raise e
-# UNTESTED

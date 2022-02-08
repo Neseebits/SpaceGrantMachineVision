@@ -1,6 +1,5 @@
 # Built in python libs
 import os
-import sys
 import time
 
 # Additional libs
@@ -15,8 +14,8 @@ try:
     from cameras.CaptureManager import CaptureManager, createCaptureSourceData
     from cameras.DisplayManager import DisplayManager, createDisplaySourceData
 except ImportError:
-    from Source.logger import Logger
-    from Source import exceptions
+    from Source.logger.logger import Logger
+    from Source.utilities import exceptions
     from Source.cameras.CaptureManager import CaptureManager, createCaptureSourceData
     from Source.cameras.DisplayManager import DisplayManager, createDisplaySourceData
 
@@ -63,11 +62,17 @@ def fetchAndShowCameras(leftSource, rightSource, show=True, threadedDisplay=True
         raise e
 
 # creates the cameras sources for ThreadedCapture and runs them into CaptureManager
-def initCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, setExposure=False):
+def initCameras(leftCam, rightCam, setExposure=False):
+    leftK, rightK, leftDistC, rightDistC = loadUndistortionFiles()
     # start CaptureManager for left and right cameras
     left = createCaptureSourceData(leftCam, leftK, leftDistC, setExposure=setExposure)
     right = createCaptureSourceData(rightCam, rightK, rightDistC, setExposure=setExposure)
     CaptureManager.init([left, right])
+    # sleep time for cameras to read in a frame
+    leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
+    while leftImage is None or rightImage is None:
+        time.sleep(.01)
+        leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
 
 # closes the camera sources
 def closeCameras():

@@ -1,28 +1,22 @@
 # Built in python libs
-import os
-import sys
-import time
 import math
 
 # Additional libs
 import numpy as np
-import cv2
-from numba import jit, njit
+from numba import jit
 
 # Custom  imports
 try:
     from logger import Logger
     import exceptions
-    import utility
     from features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
     from boundingBoxes import drawBoundingBoxes, combineBoundingBoxes
     from cameras.DisplayManager import DisplayManager
 except ImportError:
-    from Source.logger import Logger
-    from Source import exceptions
-    from Source import utility
+    from Source.logger.logger import Logger
+    from Source.utilities import exceptions
     from Source.features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
-    from Source.boundingBoxes import drawBoundingBoxes, combineBoundingBoxes
+    from Source.utilities.boundingBoxes import drawBoundingBoxes, combineBoundingBoxes
     from Source.cameras.DisplayManager import DisplayManager
 
 # given a point in x, y cordinates, an image, and an array of keypoints

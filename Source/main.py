@@ -6,60 +6,36 @@ import time
 # Additional libs
 import numpy as np
 import cv2
-import platform
-import argparse
 
 # Custom imports
 try:
-    from logger import Logger
-    import exceptions
-    from cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras, fetchCameraImages
+    from logger.logger import Logger
+    from logger.loggingCalls import logArguments, logSysteminfo
+    from Source.utilities import exceptions
+    from cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras
     from cameras.DisplayManager import DisplayManager, createDisplaySourceData
     from visualOdometry.visualodometry import computeDisparity
     from features import computeMatchingPoints, getPointsFromKeypoints
     from objectDetection.featureDensity import findFeatureDenseBoundingBoxes
-    from utility import getAvgTimeArr
+    from utilities.timing import getAvgTimeArr
+    from utilities.arguments import getArgDict, getArgFlags, handleRecordFlag, handleClearLogFlag, handleVideoFlag, handleRecordFlagClose, handleThreadedDisplayFlag
 except ImportError:
-    from Source.logger import Logger
-    from Source import exceptions
+    from Source.logger.logger import Logger
+    from Source.logger.loggingCalls import logArguments, logSysteminfo
+    from Source.utilities import exceptions
     from Source.cameras.cameras import writeKandDistNPZ, loadUndistortionFiles, fetchAndShowCameras, initCameras, closeCameras
     from Source.cameras.DisplayManager import DisplayManager, createDisplaySourceData
     from Source.visualOdometry.visualodometry import computeDisparity
     from Source.features import computeMatchingPoints, getPointsFromKeypoints
     from Source.objectDetection.featureDensity import findFeatureDenseBoundingBoxes
-    from Source.utility import getAvgTimeArr
-
-def startupLogging():
-    # begin logging and other startup methods for primary control flow
-    Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
-
-    # Log system information
-    Logger.log("SYSTEM INFORMATION:")
-    Logger.log(f"   Python Version: {sys.version}")
-    uname = platform.uname()
-    Logger.log(f"   System: {uname.system}")
-    Logger.log(f"   Node Name: {uname.node}")
-    Logger.log(f"   Release: {uname.release}")
-    Logger.log(f"   Version: {uname.version}")
-    Logger.log(f"   Machine: {uname.machine}")
-    Logger.log(f"   Processor: {uname.processor}")
-
-def logArguments(args):
-    Logger.log("ARGUMENTS:")
-    for arg in vars(args):
-        Logger.log(f"    {arg}: {getattr(args, arg)}")
+    from Source.utilities.timing import getAvgTimeArr
+    from Source.utilities.arguments import getArgDict, getArgFlags, handleRecordFlag, handleClearLogFlag, handleVideoFlag, handleRecordFlagClose, handleThreadedDisplayFlag
 
 # Primary function where our main control flow will happen
 # Contains a while true loop for continous iteration
 def main():
-    numTotalIterations = 0
-    consecutiveErrors = 0
-    iterationCounter = 0
-    iterationTimes = []
-    cameraFrameTimes = []
-    featureFrameTimes = []
-    featureDenseFrameTimes = []
-    disparityFrameTimes = []
+    numTotalIterations, consecutiveErrors, iterationCounter = 0, 0, 0
+    iterationTimes, cameraFTs, featureFTs, objectDectFTs, disparityFTs = list(), list(), list() , list(), list()
     leftImage, rightImage, grayLeftImage, grayRightImage = None, None, None, None
     leftPts, rightPts, leftKp, leftDesc, rightKp, rightDesc = None, None, None, None, None, None
     featureDenseBoundingBoxes = None
@@ -85,7 +61,7 @@ def main():
             leftImage, rightImage, grayLeftImage, grayRightImage = fetchAndShowCameras(leftCam, rightCam,
                                                                                     show=not HEADLESS,
                                                                                     threadedDisplay=THREADED_DISPLAY)
-            cameraFrameTimes.append(time.perf_counter() - cameraStartTime)
+            cameraFTs.append(time.perf_counter() - cameraStartTime)
 
             featureStartTime = time.perf_counter()
             # feature points for left and right images
@@ -94,7 +70,7 @@ def main():
                                                                                             grayRightImage, orb,
                                                                                             matcher, show=not HEADLESS,
                                                                                     threadedDisplay=THREADED_DISPLAY)
-            featureFrameTimes.append(time.perf_counter() - featureStartTime)
+            featureFTs.append(time.perf_counter() - featureStartTime)
 
             featureDenseStartTime = time.perf_counter()
             # acquires the bounding box cordinates for areas of the image where there are dense features
@@ -102,12 +78,12 @@ def main():
                                                                       binSize=30.0, featuresPerPixel=0.03,
                                                                       show=not HEADLESS,
                                                                       threadedDisplay=THREADED_DISPLAY)
-            featureDenseFrameTimes.append(time.perf_counter() - featureDenseStartTime)
+            objectDectFTs.append(time.perf_counter() - featureDenseStartTime)
 
             disparityStartTime = time.perf_counter()
             # this disparity map calculation should maybe get removed since we ??only?? care about the depth values
             disparityMap = computeDisparity(stereo, grayLeftImage, grayRightImage, show=not HEADLESS)
-            disparityFrameTimes.append(time.perf_counter() - disparityStartTime)
+            disparityFTs.append(time.perf_counter() - disparityStartTime)
 
             # all additional functionality should be present within the === comments
             # additional data that needs to be stored for each iteration should be handled above
@@ -148,59 +124,38 @@ def main():
         else:
             iterNum = "#{} Total Iterations: ".format(numTotalIterations + 1)
             iterTimeStr = "Avg iteration: {} {}".format(getAvgTimeArr(iterationTimes, iterationCounter), "ms")
-            cameraTimeStr = " => Avg frame: {} {}".format(getAvgTimeArr(cameraFrameTimes, iterationCounter), 'ms')
-            featureTimeStr = ", Avg features: {} {}".format(getAvgTimeArr(featureFrameTimes, iterationCounter), 'ms')
-            objectDectTimeStr = ", Avg feature density: {} {}".format(getAvgTimeArr(featureDenseFrameTimes,
+            cameraTimeStr = " => Avg frame: {} {}".format(getAvgTimeArr(cameraFTs, iterationCounter), 'ms')
+            featureTimeStr = ", Avg features: {} {}".format(getAvgTimeArr(featureFTs, iterationCounter), 'ms')
+            objectDectTimeStr = ", Avg feature density: {} {}".format(getAvgTimeArr(objectDectFTs,
                                                                                     iterationCounter), 'ms')
-            disparityTimeStr = ", Avg disparity map: {} {}".format(getAvgTimeArr(disparityFrameTimes,
+            disparityTimeStr = ", Avg disparity map: {} {}".format(getAvgTimeArr(disparityFTs,
                                                                                  iterationCounter), 'ms')
             Logger.log(iterNum + iterTimeStr + cameraTimeStr + featureTimeStr + objectDectTimeStr + disparityTimeStr)
             iterationCounter = 0
             iterationTimes = []
-            cameraFrameTimes = []
-            featureFrameTimes = []
-            featureDenseFrameTimes = []
-            disparityFrameTimes = []
+            cameraFTs = []
+            featureFTs = []
+            objectDectFTs = []
+            disparityFTs = []
         numTotalIterations += 1
 
 # denotes program entered in this file, the main thread
 if __name__ == "__main__":
-    startupLogging()
+    # get dictionary with args
+    argDict = getArgDict()
+    # sets global flags from boolean arguments
+    HEADLESS, CLEAR_LOG, RECORD, THREADED_DISPLAY = getArgFlags(argDict)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-H", "--headless", help="Do not show debug windows", action='store_true', required=False)
-    parser.add_argument("-TD", "--threadeddisplay", help="Use threads to speed up displays in headed mode",
-                        action="store_true", required=False)
-    parser.add_argument("-R", "--record", help="Record the camera inputs to videos", action='store_true',
-                        required=False)
-    parser.add_argument("-CL", "--clearlog", help="Clears the log on running the program", action='store_true',
-                        required=False)
-    parser.add_argument("-V", "--video", help="Set a video folder which contains a left and right camera feed",
-                        nargs='?', const='Data/Cameras/DefaultVideo/')
-    args = parser.parse_args()
-
+    # clears log file if the CLEAR_LOG is present
+    handleClearLogFlag(CLEAR_LOG)
+    # begin logging and other startup methods for primary control flow
+    Logger.init("log.log")  # Starts the logger and sets the logger to log to the specified file.
+    # ensure logger init is done before logging anything
+    time.sleep(1)
+    # log system info
+    logSysteminfo(Logger)
     # log all arguments
-    logArguments(args)
-
-    HEADLESS = True if args.headless else False
-    THREADED_DISPLAY = True if args.threadeddisplay else False
-    RECORD = True if args.record else False
-    CLEAR_LOG = True if args.clearlog else False
-
-    # wipes the log ahead of the logger being restarted
-    if CLEAR_LOG:
-        with open("log.log", 'r+') as f:
-            f.truncate(0)
-            f.seek(0)
-
-    # finds the video directory
-    if args.video is not None:
-        counter = 0
-        while not os.path.isdir(args.video):
-            args.video = "../" + args.video
-            counter += 1
-            if counter > 5:
-                raise Exception("Could not find specified folder")
+    logArguments(Logger, argDict)
 
     # Global constants for any hyper parameters for the code or physical constants
     # Define any global constants
@@ -217,38 +172,13 @@ if __name__ == "__main__":
     # inits the DisplayManager
     DisplayManager.init()
 
-    # loading data for cameras and starting the camera process
-    if args.video is None:
-        leftCam = cv2.CAP_DSHOW + 0  # cv2.CAP_DSHOW changes internal api stuff for opencv
-        rightCam = cv2.CAP_DSHOW + 1  # add/remove cv2.CAP_DSHOW as needed for your system
-    else:
-        leftCam = args.video + "stereo_left.avi"
-        rightCam = args.video + "stereo_right.avi"
-    leftK, rightK, leftDistC, rightDistC = loadUndistortionFiles()
-    initCameras(leftCam, rightCam, leftK, rightK, leftDistC, rightDistC, setExposure=False)
-    # sleep time for cameras to read in a frame
-    leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
-    while leftImage is None or rightImage is None:
-        time.sleep(.01)
-        leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
-    # initiate writers
-    leftWriter = None
-    rightWriter = None
-    if RECORD:
-        videoPath = "Data/Cameras/RawOutput/"
-        while not os.path.isdir(videoPath):
-            videoPath = "../" + videoPath
-        leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
-        height, width, _ = leftImage.shape
-        fourcc = cv2.VideoWriter_fourcc('W', 'M', 'V', '2')
-        fps = 16.0
-        leftWriter = cv2.VideoWriter(videoPath + "leftOutput.wmv", fourcc=fourcc, fps=fps, frameSize=(width, height))
-        rightWriter = cv2.VideoWriter(videoPath + "rightOutput.wmv", fourcc=fourcc, fps=fps, frameSize=(width, height))
+    leftCam, rightCam = handleVideoFlag(argDict['video'])
 
-    # if the displays are in threaded mode then we need a new screen to capture the keyboard
-    if THREADED_DISPLAY:
-        input_image = np.zeros((300, 300))
-        cv2.imshow("Input Screen", input_image)
+    initCameras(leftCam, rightCam, setExposure=False)
+
+    leftWriter, rightWriter = handleRecordFlag(RECORD, leftCam, rightCam)
+
+    handleThreadedDisplayFlag(THREADED_DISPLAY)
 
     # being primary loop
     Logger.log("Program starting...")
@@ -264,10 +194,7 @@ if __name__ == "__main__":
             break
 
     closeCameras()
-    if leftWriter is not None:
-        leftWriter.release()
-    if rightWriter is not None:
-        rightWriter.release()
+    handleRecordFlagClose(leftWriter, rightWriter)
     DisplayManager.stopDisplays()
     cv2.destroyAllWindows()
     Logger.shutdown()  # Shuts down the logging system and prints a closing message to the file

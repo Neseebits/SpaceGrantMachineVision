@@ -1,6 +1,4 @@
 # Built in python libs
-import os
-import sys
 import time
 import math
 
@@ -9,7 +7,6 @@ import numpy as np
 from numba import jit
 
 # Custom  imports
-from Source import exceptions
 
 @jit(nopython=True)
 def getTranslationVector(deltaX=0, deltaY=0, deltaZ=0):
