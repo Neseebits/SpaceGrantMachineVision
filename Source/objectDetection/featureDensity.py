@@ -13,11 +13,11 @@ try:
     from boundingBoxes import drawBoundingBoxes, combineBoundingBoxes
     from cameras.DisplayManager import DisplayManager
 except ImportError:
-    from Source.logger.logger import Logger
-    from Source.utilities import exceptions
-    from Source.features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
-    from Source.utilities.boundingBoxes import drawBoundingBoxes, combineBoundingBoxes
-    from Source.cameras.DisplayManager import DisplayManager
+    from logger.logger import Logger
+    from utilities import exceptions
+    from features import getPointsFromKeypoints, getImageKeyDesc, getImagePairKeyDesc
+    from utilities.boundingBoxes import drawBoundingBoxes, combineBoundingBoxes
+    from cameras.DisplayManager import DisplayManager
 
 # given a point in x, y cordinates, an image, and an array of keypoints
 # determines if the surrounding region contains enough pixel of density

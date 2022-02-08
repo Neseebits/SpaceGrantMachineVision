@@ -6,7 +6,7 @@
 try:
     from logger.logger import Logger
 except ImportError:
-    from Source.logger.logger import Logger
+    from logger.logger import Logger
 
 # takes an array of times and returns the average over a size
 def getAvgTimeArr(arr, size):

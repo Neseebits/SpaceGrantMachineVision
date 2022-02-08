@@ -14,10 +14,10 @@ try:
     from cameras.CaptureManager import CaptureManager, createCaptureSourceData
     from cameras.DisplayManager import DisplayManager, createDisplaySourceData
 except ImportError:
-    from Source.logger.logger import Logger
-    from Source.utilities import exceptions
-    from Source.cameras.CaptureManager import CaptureManager, createCaptureSourceData
-    from Source.cameras.DisplayManager import DisplayManager, createDisplaySourceData
+    from logger.logger import Logger
+    from utilities import exceptions
+    from cameras.CaptureManager import CaptureManager, createCaptureSourceData
+    from cameras.DisplayManager import DisplayManager, createDisplaySourceData
 
 # gets the camera frames from the captureManager
 def fetchCameraImages(leftSource, rightSource):

@@ -9,7 +9,7 @@ import platform
 try:
     from logger import Logger
 except ImportError:
-    from Source.logger.logger import Logger
+    from logger.logger import Logger
 
 
 def logSysteminfo(Logger):

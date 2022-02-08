@@ -7,13 +7,13 @@ from numba import jit
 
 # Custom  imports
 try:
-    from Source.logger.logger import Logger
+    from logger.logger import Logger
     import exceptions
     from cameras.DisplayManager import DisplayManager
 except ImportError:
-    from Source.logger.logger import Logger
-    from Source.utilities import exceptions
-    from Source.cameras.DisplayManager import DisplayManager
+    from logger.logger import Logger
+    from utilities import exceptions
+    from cameras.DisplayManager import DisplayManager
 
 
 # gets the coordinates out of the bounding box list/array

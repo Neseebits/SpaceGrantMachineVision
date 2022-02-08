@@ -11,8 +11,8 @@ try:
     import exceptions
     from cameras.DisplayManager import DisplayManager
 except ImportError:
-    from Source.utilities import exceptions
-    from Source.cameras.DisplayManager import DisplayManager
+    from utilities import exceptions
+    from cameras.DisplayManager import DisplayManager
 
 # compute the disparity map of the two grayscale images given
 # takes a stereo matcher object and two grayscale images

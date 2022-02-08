@@ -1,4 +1,4 @@
-from Source.cameras.CaptureManager import CaptureManager, createCaptureSourceData
+from cameras.CaptureManager import CaptureManager, createCaptureSourceData
 import cv2
 
 if __name__ == '__main__' :
