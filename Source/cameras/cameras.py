@@ -71,7 +71,7 @@ def initCameras(leftCam, rightCam, setExposure=False):
     # sleep time for cameras to read in a frame
     leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
     while leftImage is None or rightImage is None:
-        time.sleep(.01)
+        time.sleep(.1)
         leftImage, rightImage = fetchCameraImages(leftCam, rightCam)
 
 # closes the camera sources
