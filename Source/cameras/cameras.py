@@ -13,11 +13,13 @@ try:
     import utilities.exceptions
     from cameras.CaptureManager import CaptureManager, createCaptureSourceData
     from cameras.DisplayManager import DisplayManager, createDisplaySourceData
+    from utilities.exceptions import CameraReadError
 except ImportError:
     from Source.logger.logger import Logger
     from Source.utilities import exceptions
     from Source.cameras.CaptureManager import CaptureManager, createCaptureSourceData
     from Source.cameras.DisplayManager import DisplayManager, createDisplaySourceData
+    from Source.utilities.exceptions import CameraReadError
 
 # gets the camera frames from the captureManager
 def fetchCameraImages(leftSource, rightSource):
@@ -54,6 +56,10 @@ def showCameras(left, right, threadedDisplay=True):
 def fetchAndShowCameras(leftSource, rightSource, show=True, threadedDisplay=True):
     try:
         left, right = fetchCameraImages(leftSource, rightSource)
+        if left is None:
+            raise CameraReadError(f"Port {leftSource}")
+        if right is None:
+            raise CameraReadError(f"Port {rightSource}")
         grayLeft, grayRight = getGrayscaleImages(left, right)
         if show:
             showCameras(left, right, threadedDisplay)
